@@ -1,0 +1,19 @@
+#TODO THINgS TO WATCH OUT FOR:
+
+- SmartHashtags URL
+https://d212rkvo8t62el.cloudfront.net/tag/
+
+replace with:
+
+https://query.displaypurposes.com/tag/
+
+- Clarify doesn't work on windows
+
+from .clarifai_util import check_image
+
+
+
+# ERRORS:
+- unpicklingerror: invalid load key \x00
+
+delete pkl cookie saved

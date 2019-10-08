@@ -1,0 +1,127 @@
+  {%- from "_formhelpers.jinja2" import render_field, render_hidden, render_submit, submit_confirmation_popover with context -%}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+
+{# Follower following tool #}
+{%- macro follower_following_tool_request(form) -%}
+  {% set fields = form._fields %}
+
+  <div class="">Use this tool to grab the list of accounts (usernames) that are in some relation with your target users.</div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="settings-element-basic pt-5">
+        {{ render_field(form.session_name, label='Name of the request') }}
+      </div>
+      {{ all_settings.follower_following_tool_target_user_list(fields) }}
+    </div>
+    <div class="col-md-6">
+      <div class="js-follower_following_tool_type">
+        {{ all_settings.follower_following_tool_type(fields) }}
+      </div>
+      {{ all_settings.follower_following_tool_grab_amount(fields) }}
+      {{ all_settings.follower_following_tool_profile_picker(fields) }}
+    </div>
+  </div>
+
+  <div class="{{ get_visibility_classes('expert') }}">
+    <div class="row js-follower_following_tool_unfollowers_fields d-none">
+      <div class="col-md-6">
+        {{ all_settings.follower_following_tool_unfollowers_compare_track(fields) }}
+      </div>
+      <div class="col-md-6">
+        {{ all_settings.follower_following_tool_unfollowers_compare_by(fields) }}
+      </div>
+    </div>
+  </div>
+{%- endmacro -%}
+
+{# Custom lists #}
+{%- macro custom_list_form(form, action = '/custom-lists') -%}
+  {% set fields = form._fields %}
+
+  <div class="js-custom-list-form-wrap">
+    <form class="js-custom-list-form" method="post" action="{{ action }}">
+      {{ form.csrf_token }}
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="settings-element-basic pt-5">
+            {{ render_field(form.name, label='Name of this custom list') }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="js-custom-list-type-key">
+            {{ all_settings.custom_list_type_key(fields) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="js-custom-list-holder">
+
+      </div>
+
+    </form>
+    {# Outside of the form to allow pressing enter in the lists #}
+    <button class="btn btn-primary btn-sm" data-form-to-submit="js-custom-list-form">Submit</button>
+
+    <div class="d-none js-custom-list-storage">
+      <div class="js-custom-list-usernames">
+        {{ all_settings.custom_lists_users(fields) }}
+      </div>
+      <div class="js-custom-list-hashtags">
+        {{ all_settings.custom_lists_tags(fields) }}
+      </div>
+      <div class="js-custom-list-comments">
+        {{ all_settings.custom_lists_comments(fields) }}
+      </div>
+      <div class="js-custom-list-locations">
+        {{ all_settings.custom_lists_locations(fields) }}
+      </div>
+      <div class="js-custom-list-links">
+        {{ all_settings.custom_lists_links(fields) }}
+      </div>
+    </div>
+  </div>
+{%- endmacro -%}
+
+
+{# App information modal #}
+{%- macro app_information_modal() -%}
+
+<!-- Central Modal Small -->
+<div class="modal fade" id="app_information_modal" tabindex="-1" role="dialog" aria-labelledby="app_information_modal"
+  aria-hidden="true">
+
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+      <div class="logo-wrapper p-2 m-2 waves-effect">
+        <a class="btn btn-link d-block" href="https://instahappily.com" target="_target">
+          <img src="{{ url_for('static', filename='img/InstaHappily-logo.png') }}" class="img-fluid" alt="" />
+        </a>
+      </div>
+
+
+        <div class="text-center">
+          version {{ app_version }}
+        </div>
+
+        <div class="row">
+          <div class="col">
+
+          </div>
+          <div class="col">
+
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Ok</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Central Modal Small -->
+
+{%- endmacro -%}

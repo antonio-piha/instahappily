@@ -1,0 +1,179 @@
+{%- extends "layout.jinja2" -%}
+{%- from "_formhelpers.jinja2" import activate_button, deactivate_button with context -%}
+
+{% block navbar %}
+  <li class="nav-item">
+    <a class="" href="/add-proxy">
+      <button type="button" class="btn btn-primary btn-sm">
+        <i class="fas fa-plug mr-1"></i> Add new proxy
+      </button>
+    </a>
+  </li>
+{% endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    PROXIES
+  </li>
+{%- endblock -%}
+
+{% block content %}
+
+{# ======================================================================= #}
+{# Active proxies #}
+{# ======================================================================= #}
+<div class="card my-3">
+  <div class="card-header unique-color-dark white-text">
+   <i class="fas fa-plug mr-3"></i>Proxies
+  </div>
+  <div class="card-body">
+
+    {%- if proxies -%}
+      <div class="table-responsive">
+        <table class="table table-hover js-data-table" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th class="th-sm">Name</th>
+              <th class="th-sm">IP</th>
+              <th class="th-sm">Port</th>
+              <th class="th-sm">Authentication</th>
+              <th class="th-sm">Connected with</th>
+              <th class="th-sm">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {%- for proxy in proxies -%}
+              <tr>
+                <td>
+                  <h6>
+                    <a class="" href="/proxy/{{proxy.id}}/edit">
+                      <button type="button" class="btn btn-outline-primary btn-rounded btn-sm">
+                        <i class="fas fa-plug mr-2"></i>{{ proxy.name }}
+                      </button>
+                    </a>
+                  </h6>
+                </td>
+                <td class="pt-4">
+                  {{ proxy.ip }}
+                </td>
+                <td class="pt-4">
+                  {{ proxy.port }}
+                </td>
+                <td class="pt-4">
+                  {%- if proxy.username != '' -%}
+                    Username: {{ proxy.username }}
+                  {%- else -%}
+                    None
+                  {%- endif -%}
+                </td>
+                <td class="pt-4">
+                  {%- if proxy.id in proxies_profiles -%}
+                    {%- set profiles = proxies_profiles[proxy.id] -%}
+                    <div>Times used: {{ profiles | length }}</div>
+                    {%- for profile in profiles -%}
+                      {{ profile.username }}
+                    {%- endfor -%}
+                  {%- else -%}
+                    None
+                  {%- endif -%}
+                </td>
+                <td>
+                  {{ deactivate_button(form=proxy_deactivate_form, action='/proxy/{}/deactivate'.format(proxy.id)) }}
+                </td>
+              </tr>
+            {%- endfor -%}
+
+          </tbody>
+        </table>
+      </div>
+    {%- else -%}
+      There are no proxies
+    {%- endif -%}
+
+  </div> {# card-body #}
+</div>
+
+
+{# ======================================================================= #}
+{# Deactivated proxies #}
+{# ======================================================================= #}
+<div class="card my-3">
+  <div class="card-header unique-color-dark white-text">
+    Deactivated proxies
+  </div>
+  <div class="card-body">
+
+    {%- if deactivated_proxies -%}
+      <div class="table-responsive">
+        <table class="table table-hover js-data-table" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th class="th-sm">Status</th>
+              <th class="th-sm">Name</th>
+              <th class="th-sm">IP</th>
+              <th class="th-sm">Port</th>
+              <th class="th-sm">Authentication</th>
+              <th class="th-sm">Connected with</th>
+              <th class="th-sm">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {%- for proxy in deactivated_proxies -%}
+              <tr>
+                <td>
+                  <h6>
+                    <span class="badge badge-pill badge-light">Deactivated</span>
+                  </h6>
+                </td>
+                <td>
+                  <h6>
+                    <a class="" href="/proxy/{{proxy.id}}/edit">
+                      <button type="button" class="btn btn-outline-primary btn-rounded btn-sm">
+                        <i class="fas fa-plug mr-2"></i>{{ proxy.name }}
+                      </button>
+                    </a>
+                  </h6>
+                </td>
+                <td class="pt-4">
+                  {{ proxy.ip }}
+                </td>
+                <td class="pt-4">
+                  {{ proxy.port }}
+                </td>
+                <td class="pt-4">
+                  {%- if proxy.username != '' -%}
+                    Username: {{ proxy.username }}
+                  {%- else -%}
+                    None
+                  {%- endif -%}
+                </td>
+                <td class="pt-4">
+                  {%- if proxy.id in proxies_profiles -%}
+                    {%- set profiles = proxies_profiles[proxy.id] -%}
+                    <div>Times used: {{ profiles | length }}</div>
+                    {%- for profile in profiles -%}
+                      {{ profile.username }}
+                    {%- endfor -%}
+                  {%- else -%}
+                    None
+                  {%- endif -%}
+                </td>
+                <td>
+                  {{ activate_button(form=proxy_activate_form, action='/proxy/{}/activate'.format(proxy.id)) }}
+                </td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
+
+    {%- else -%}
+      No deactivated proxies
+    {%- endif -%}
+
+  </div> {# card-body #}
+</div>
+
+{%- endblock %}

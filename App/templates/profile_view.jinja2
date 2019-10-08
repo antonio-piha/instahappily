@@ -1,0 +1,143 @@
+{%- extends "layout.jinja2" -%}
+{%- from "_formhelpers.jinja2" import activate_button, deactivate_button with context -%}
+{%- from "_elements.jinja2" import profile_top_bar, profile_nav_item, chart with context -%}
+
+{% block navbar %}
+  {%- call profile_top_bar(profile) -%}
+    <li class="nav-item">
+      <a class="" href="/profile/{{profile.id}}/edit">
+        <button type="button" class="btn btn-primary btn-sm">
+          <i class="fas fa-cog mr-2"></i>Settings
+        </button>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="" href="/profile/{{profile.id}}/sessions">
+        <button type="button" class="btn btn-primary btn-sm">
+          <i class="fas fa-cubes mr-2"></i>Sessions
+        </button>
+      </a>
+    </li>
+    <li class="nav-item">
+      {%- if profile.active -%}
+        {{ deactivate_button(form=profile_deactivate_form, action='/profile/{}/deactivate'.format(profile.id)) }}
+      {# {%- else -%} #}
+      {%- endif -%}
+    </li>
+  {%- endcall -%}
+{%- endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  {{ profile_nav_item(profile) }}
+{%- endblock -%}
+
+{% block content %}
+
+  <div class="alert alert-warning m-0 my-2 js-profile-view-charts-no-data-info d-none" role="alert">
+    <i class="fas fa-info mr-3"></i> Charts could be empty because you have to run at least one session for this profile to generate the data.
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h6>Profile followers and following charts</h6>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col col-md-6">
+      <div class="card text-white my-2 wow fadeIn">
+        {# Class ml-3 is to separate text #}
+        <div class="card-header unique-color-dark">
+          <i class="fas fa-chart-line mr-3"></i>Number of followers
+        </div>
+        <div class="card-body">
+          {{ chart(name='profile-followers') }}
+        </div>
+      </div>
+
+    </div>
+    <div class="col col-md-6">
+
+      <div class="card text-white my-2">
+        {# Class ml-3 is to separate text #}
+        <div class="card-header unique-color-dark">
+          <i class="fas fa-chart-line mr-3"></i>Number of followings
+        </div>
+        <div class="card-body">
+          {{ chart(name='profile-following') }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card-separator"></div>
+  <div class="card">
+    <div class="card-body">
+      <h6>Activity charts - shows what InstaHappily is doing</h6>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col col-md-6">
+
+      <div class="card text-white my-2">
+        {# Class ml-3 is to separate text #}
+        <div class="card-header unique-color-dark">
+          <i class="fas fa-chart-line mr-3"></i>Likes
+        </div>
+        <div class="card-body">
+          {{ chart(name='profile-likes') }}
+        </div>
+      </div>
+
+    </div>
+    <div class="col col-md-6">
+
+      <div class="card text-white my-2">
+        {# Class ml-3 is to separate text #}
+        <div class="card-header unique-color-dark">
+          <i class="fas fa-chart-line mr-3"></i>Comments
+        </div>
+        <div class="card-body">
+          {{ chart(name='profile-comments') }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col col-md-6">
+
+      <div class="card text-white my-2">
+        {# Class ml-3 is to separate text #}
+        <div class="card-header unique-color-dark">
+          <i class="fas fa-chart-line mr-3"></i>Follows
+        </div>
+        <div class="card-body">
+          {{ chart(name='profile-follows') }}
+        </div>
+      </div>
+
+    </div>
+    <div class="col col-md-6">
+      <div class="card text-white my-2">
+        {# Class ml-3 is to separate text #}
+        <div class="card-header unique-color-dark">
+          <i class="fas fa-chart-line mr-3"></i>Unfollows
+        </div>
+        <div class="card-body">
+          {{ chart(name='profile-unfollows') }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  window.activity_records = {{ activity_record|tojson }}
+</script>
+
+{%- endblock %}

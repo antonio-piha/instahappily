@@ -1,0 +1,61 @@
+  {%- extends "layout.jinja2" %}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+{%- from "_formhelpers.jinja2" import render_field, render_submit, activate_button, deactivate_button with context -%}
+{%- from "_elements.jinja2" import profile_top_bar, profile_nav_item with context -%}
+
+{% block navbar %}
+  {%- call profile_top_bar(profile) -%}
+    {%- call all_settings.settings_actions_bar(render_actions_only=true) -%}
+      <li class="nav-item">
+        <button class="btn btn-primary btn-sm waves-effect waves-light" data-form-to-submit="js-form-profile-settings">
+          <i class="fas fa-check mr-1"></i>Save changes
+        </button>
+      </li>
+      <li class="nav-item">
+        {%- if profile.active -%}
+          {{ deactivate_button(form=profile_deactivate_form, action='/profile/{}/deactivate'.format(profile.id)) }}
+        {%- else -%}
+          {{ activate_button(form=profile_activate_form, action='/profile/{}/activate'.format(profile.id)) }}
+        {%- endif -%}
+      </li>
+    {%- endcall -%}
+  {%- endcall -%}
+{% endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  {{ profile_nav_item(profile) }}
+{%- endblock -%}
+
+{% block content %}
+
+  {#Body#}
+  <form method="post" action="" class="js-form-profile-settings">
+    {{ form.csrf_token }}
+    {%- set fields = form._fields -%}
+
+    {%- include "_all_profile_settings.jinja2" with context -%}
+
+    <div id="section-password" class="card-separator"></div>
+    <div class="card">
+      <div class="card-header unique-color-dark white-text">
+          <i class="fas fa-key mr-3"></i>Password
+          <h4 class="d-inline m-0 float-right">
+            {# <a class="white-text d-inline" href="#section-action-limits"><i class="fas fa-angle-down"></i></a> #}
+          </h4>
+      </div>
+      <div class="card-body">
+        <button type="button" class="btn btn-primary js-reveal-password-field">
+          <i class="fas fa-lock mr-3"></i>I want to change the password
+        </button>
+        <div class="d-none js-hidden-password-field">
+          {{ render_field(form.password, label='Enter new password', icon='key') }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card-separator"></div>
+
+
+</form>
+
+{%- endblock %}

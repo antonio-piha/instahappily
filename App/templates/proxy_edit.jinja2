@@ -1,0 +1,74 @@
+{%- extends "layout.jinja2" -%}
+{%- from "_formhelpers.jinja2" import activate_button, deactivate_button with context -%}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+
+{% block navbar %}
+  {%- call all_settings.settings_actions_bar(render_actions_only=true) -%}
+    <li class="nav-item">
+      {%- if proxy.active -%}
+        {{ deactivate_button(form=proxy_deactivate_form, action='/proxy/{}/deactivate'.format(proxy.id)) }}
+      {%- else -%}
+        {{ activate_button(form=proxy_activate_form, action='/proxy/{}/activate'.format(proxy.id)) }}
+      {%- endif -%}
+    </li>
+  {%- endcall -%}
+{% endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    EDIT PROXY
+  </li>
+{%- endblock -%}
+
+{% block content %}
+
+  <div class="card">
+    <div class="card-header unique-color-dark white-text">
+        <i class="fas fa-plug mr-3"></i>Proxy
+    </div>
+    <div class="card-body">
+
+      <form method="post" action="" class="js-form-proxy">
+        {{ form.csrf_token }}
+        {%- set fields = form._fields -%}
+
+        <div class="row">
+          <div class="col-md-6">
+            {{ all_settings.proxy_name(fields) }}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            {{ all_settings.proxy_ip(fields) }}
+          </div>
+          <div class="col-md-6">
+            {{ all_settings.proxy_port(fields) }}
+          </div>
+        </div>
+
+          <div class="{{ get_visibility_classes('advanced') }}">
+            <div class="row">
+              <div class="col-md-6">
+                {{ all_settings.proxy_username(fields) }}
+              </div>
+              <div class="col-md-6">
+                <button type="button" class="btn btn-primary m-4 js-reveal-password-field">
+                  <i class="fas fa-lock mr-3"></i>I want to change the password
+                </button>
+                <div class="d-none js-hidden-password-field">
+                  {{ all_settings.proxy_password(fields) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+      </form>
+
+      <button type="button" class="btn btn-primary mt-4" data-form-to-submit="js-form-proxy">
+        <i class="fas fa-check mr-3"></i>Save changes
+      </button>
+    </div>
+  </div>
+
+{%- endblock %}

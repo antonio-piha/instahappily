@@ -1,0 +1,37 @@
+  {%- extends "layout.jinja2" -%}
+{%- from "_formhelpers.jinja2" import render_fields, render_hidden, render_submit, submit_confirmation_popover with context -%}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+
+{% block navbar %}
+  {% call all_settings.settings_actions_bar() %}
+    <li class="nav-item">
+      <button type="button" class="btn btn-primary btn-sm waves-effect waves-light" data-form-to-submit="js-form-app-settings">
+        <i class="fas fa-check mr-1"></i>Save changes
+      </button>
+    </li>
+  {% endcall %}
+{%- endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    APP SETTINGS
+  </li>
+{%- endblock -%}
+
+{% block content %}
+<div class="card">
+  <div class="card-header unique-color-dark white-text">
+    <i class="fas fa-cog mr-3"></i>App Settings
+  </div>
+  <div class="card-body">
+    <form method="post" action="" class="js-form-app-settings">
+    {{ form.csrf_token }}
+
+    {% set fields = form._fields %}
+    {{ all_settings.settings_view_level(fields) }}
+    {{ all_settings.serial_key(fields) }}
+    
+    </form>
+  </div>
+</div>
+{%- endblock %}

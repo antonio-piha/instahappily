@@ -1,0 +1,35 @@
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+
+<div id="section-proxy" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark white-text">
+      <i class="fas fa-plug mr-3"></i>Connection proxy
+      <h4 class="d-inline m-0 float-right">
+        {# <a class="white-text d-inline" href="#section-action-limits"><i class="fas fa-angle-up"></i></a> #}
+        <a class="white-text d-inline" href="#section-action-limits"><i class="fas fa-angle-down"></i></a>
+      </h4>
+  </div>
+  <div class="card-body">
+    If configured, InstaHappily will connect this profile through internet connection proxy.
+    Which means every call made will go through the proxy for this profile.
+    <div class="row">
+      <div class="col-12">
+        {{ all_settings.proxy_picker(fields) }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="section-action-limits" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark white-text">
+      <i class="fas fa-wave-square mr-3"></i>Actions limits - use to avoid ban
+      <h4 class="d-inline m-0 float-right">
+        <a class="white-text d-inline mr-3" href="#section-proxy"><i class="fas fa-angle-up"></i></a>
+        <a class="white-text d-inline" href="#section-password"><i class="fas fa-angle-down"></i></a>
+      </h4>
+  </div>
+  <div class="card-body">
+    {%- include "settings_quota_supervisor.jinja2" -%}
+  </div>
+</div>

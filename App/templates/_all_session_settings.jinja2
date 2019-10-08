@@ -1,0 +1,560 @@
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+{%- from "_formhelpers.jinja2" import render_fields, render_field, render_hidden, render_submit, submit_confirmation_popover with context -%}
+{%- from "_elements.jinja2" import profile_link with context -%}
+
+
+<div id="section-likes" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-heart mr-3"></i>Likes</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline" href="#section-comments"><i class="fas fa-angle-down"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+
+    <div class="form-row">
+
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_liking(fields) }}
+            {{ all_settings.liking_percentage(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3 {{ get_visibility_classes('advanced') }}">
+          <div class="card-body">
+            {{ all_settings.delimit_liking(fields) }}
+            {{ all_settings.min_likes_per_post(fields) }}
+            {{ all_settings.max_likes_per_post(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.like_by_user_list(fields) }}
+            {{ all_settings.like_by_user_amount(fields) }}
+            {{ all_settings.like_by_user_randomize(fields) }}
+          </div>
+        </div>
+
+
+
+      </div>
+
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.like_by_tags_list(fields) }}
+            {{ all_settings.like_by_tags_amount(fields) }}
+            {{ all_settings.like_by_tags_interact(fields) }}
+            {{ all_settings.like_by_tags_randomize(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_like_by_feed(fields) }}
+            {{ all_settings.like_by_feed_amount(fields) }}
+            {{ all_settings.like_by_feed_interact(fields) }}
+            {{ all_settings.like_by_feed_randomize(fields) }}
+            {{ all_settings.like_by_feed_unfollow(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.like_by_locations_list(fields) }}
+            {{ all_settings.like_by_locations_amount(fields) }}
+          </div>
+        </div>
+
+      </div> {# Col-6 #}
+    </div>
+
+  </div>
+</div>
+
+<div id="section-comments" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-comment mr-3"></i>Comments</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline mr-3" href="#section-likes"><i class="fas fa-angle-up"></i></a>
+      <a class="white-text d-inline" href="#section-follow"><i class="fas fa-angle-down"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+    <div class="form-row">
+
+      <div class="col-md-6">
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_commenting(fields) }}
+            {{ all_settings.commenting_percentage(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3 {{ get_visibility_classes('advanced') }}">
+          <div class="card-body">
+            {{ all_settings.delimit_commenting(fields) }}
+            {{ all_settings.delimit_commenting_min(fields) }}
+            {{ all_settings.delimit_commenting_max(fields) }}
+            {{ all_settings.delimit_commenting_mandatory_words(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.comment_by_locations_list(fields) }}
+            {{ all_settings.comment_by_locations_amount(fields) }}
+          </div>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.comments_general_all_media(fields) }}
+            {{ all_settings.comments_general_photo(fields) }}
+            {{ all_settings.comments_general_video(fields) }}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="section-follow" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-eye mr-3"></i>Follow</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline mr-3" href="#section-comments"><i class="fas fa-angle-up"></i></a>
+      <a class="white-text d-inline" href="#section-unfollow"><i class="fas fa-angle-down"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+
+    <div class="form-row">
+
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_following(fields) }}
+            {{ all_settings.follow_percentage(fields) }}
+            {{ all_settings.follow_times(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.follow_username_list(fields) }}
+            {{ all_settings.follow_username_sleep_delay(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.follow_user_followers_list(fields) }}
+            {{ all_settings.follow_user_followers_amount(fields) }}
+            {{ all_settings.interact_on_follow_user_followers(fields) }}
+            {{ all_settings.follow_user_followers_randomize(fields) }}
+            {{ all_settings.follow_user_followers_sleep_delay(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.follow_commenters_list(fields) }}
+            {{ all_settings.follow_commenters_amount(fields) }}
+            {{ all_settings.follow_commenters_daysold(fields) }}
+            {{ all_settings.follow_commenters_max_pic(fields) }}
+            {{ all_settings.interact_on_follow_commenters(fields) }}
+            {{ all_settings.follow_commenters_sleep_delay(fields) }}
+            <span class="{{ get_visibility_classes('advanced') }}">
+              If the list has 1 user, and we set this setting which is the amount of photos to analyze for each user to 50,
+              and we set the limit on how many accounts to follow to 100 this means that we will analyze 50 images and find
+              100 accounts who commented the most and follow them.
+            </span>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.follow_by_locations_list(fields) }}
+            {{ all_settings.follow_by_locations_amount(fields) }}
+          </div>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.follow_by_tags_list(fields) }}
+            {{ all_settings.follow_by_tags_amount(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.follow_user_following_list(fields) }}
+            {{ all_settings.follow_user_following_amount(fields) }}
+            {{ all_settings.interact_on_follow_user_following(fields) }}
+            {{ all_settings.follow_user_following_randomize(fields) }}
+            {{ all_settings.follow_user_following_sleep_delay(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.follow_likers_list(fields) }}
+            {{ all_settings.follow_likers_photos_grab_amount(fields) }}
+            {{ all_settings.follow_likers_per_photo(fields) }}
+            {{ all_settings.interact_on_follow_likers(fields) }}
+            {{ all_settings.follow_likers_randomize(fields) }}
+            {{ all_settings.follow_likers_sleep_delay(fields) }}
+            <span class="{{ get_visibility_classes('advanced') }}">
+              If the list has 2 users, and we set the amount of photos to grab for each user to 3,
+              and we set amount of likers to follow to 5 that gives 2 * 3 * 5 = 30 new users that will get follow in total.
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="section-unfollow" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-eye-slash mr-3"></i>Unfollow</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline mr-3" href="#section-follow"><i class="fas fa-angle-up"></i></a>
+      <a class="white-text d-inline" href="#section-relationships"><i class="fas fa-angle-down"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+
+    <div class="form-row">
+
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.unfollow_custom_list(fields) }}
+            {{ all_settings.unfollow_custom_list_amount(fields) }}
+            {{ all_settings.unfollow_custom_list_track(fields) }}
+            {{ all_settings.unfollow_custom_list_unfollow_after(fields) }}
+            {{ all_settings.unfollow_custom_list_style(fields) }}
+            {{ all_settings.unfollow_custom_list_sleep_delay(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_unfollow_all_following(fields) }}
+            {{ all_settings.unfollow_all_following_amount(fields) }}
+            {{ all_settings.unfollow_all_following_unfollow_after(fields) }}
+            {{ all_settings.unfollow_all_following_style(fields) }}
+            {{ all_settings.unfollow_all_following_sleep_delay(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.dont_unfollow_my_active_users(fields) }}
+            {{ all_settings.dont_unfollow_my_active_users_post_amount(fields) }}
+          </div>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_unfollow_who_we_followed(fields) }}
+            {{ all_settings.unfollow_who_we_followed_amount(fields) }}
+            {{ all_settings.unfollow_who_we_followed_track(fields) }}
+            {{ all_settings.unfollow_who_we_followed_unfollow_after(fields) }}
+            {{ all_settings.unfollow_who_we_followed_style(fields) }}
+            {{ all_settings.unfollow_who_we_followed_sleep_delay(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_unfollow_non_followers(fields) }}
+            {{ all_settings.unfollow_non_followers_amount(fields) }}
+            {{ all_settings.unfollow_non_followers_unfollow_after(fields) }}
+            {{ all_settings.unfollow_non_followers_style(fields) }}
+            {{ all_settings.unfollow_non_followers_sleep_delay(fields) }}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="section-relationships" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-bullseye mr-3"></i>Target audience</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline mr-3" href="#section-unfollow"><i class="fas fa-angle-up"></i></a>
+      <a class="white-text d-inline" href="#section-interactions"><i class="fas fa-angle-down"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+    <div class="mb-3">Control your targeted audience by setting number of followers, following or posts users must have.</div>
+
+    <div class="form-row">
+
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.relationship_bounds_min_following(fields) }}
+            {{ all_settings.relationship_bounds_max_following(fields) }}
+          </div>
+        </div>
+
+          <div class="card mb-3 {{ get_visibility_classes('advanced') }}">
+          <div class="card-body">
+            {{ all_settings.relationship_bounds_min_posts(fields) }}
+            {{ all_settings.relationship_bounds_max_posts(fields) }}
+          </div>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.relationship_bounds_min_followers(fields) }}
+            {{ all_settings.relationship_bounds_max_followers(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3 {{ get_visibility_classes('expert') }}">
+          <div class="card-body">
+            FFR is shorthand for "followers-following ratio"
+            {{ all_settings.potency_ratio_positivness(fields) }}
+            {{ all_settings.potency_ratio_followers_count(fields) }}
+            {{ all_settings.potency_ratio_following_count(fields) }}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="section-interactions" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-compress-arrows-alt mr-3"></i>Direct interactions</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline mr-3" href="#section-relationships"><i class="fas fa-angle-up"></i></a>
+      <a class="white-text d-inline" href="#section-ignores"><i class="fas fa-angle-down"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+    <div>Direct interactions will take in consideration other options such as likes, comments, follows and targeted audience.
+    Actions are defined as likes, comments or follows.</div>
+    <div class="form-row">
+
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.interact_by_users_list(fields) }}
+            {{ all_settings.interact_by_users_amount(fields) }}
+            {{ all_settings.interact_by_users_randomize(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.interact_by_users_tagged_posts_list(fields) }}
+            {{ all_settings.interact_by_users_tagged_posts_amount(fields) }}
+            {{ all_settings.interact_by_users_tagged_posts_randomize(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.interact_by_users_following_list(fields) }}
+            {{ all_settings.interact_by_users_following_amount(fields) }}
+            {{ all_settings.interact_by_users_following_randomize(fields) }}
+          </div>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.interact_by_user_followers_list(fields) }}
+            {{ all_settings.interact_by_user_followers_amount(fields) }}
+            {{ all_settings.interact_by_user_followers_randomize(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.interact_by_comments_users_list(fields) }}
+            {{ all_settings.interact_by_comments_posts_amount(fields) }}
+            {{ all_settings.interact_by_comments_comments_per_post(fields) }}
+            {{ all_settings.interact_by_comments_interact_commenters(fields) }}
+            {{ all_settings.interact_by_comments_randomize(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.interact_on_posts_at_url_list(fields) }}
+            {{ all_settings.interact_on_posts_at_url_interact_owner(fields) }}
+            {{ all_settings.interact_on_posts_at_url_randomize(fields) }}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="section-ignores" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-fast-forward mr-3"></i>Ignore and skip users, hashtags, etc.</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline mr-3" href="#section-interactions"><i class="fas fa-angle-up"></i></a>
+      <a class="white-text d-inline" href="#section-other"><i class="fas fa-angle-down"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+    <div class="form-row">
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.ignore_users_by_user_list(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.exclude_friends_list(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3 {{ get_visibility_classes('advanced') }}">
+          <div class="card-body">
+            {{ all_settings.skip_private(fields) }}
+            {{ all_settings.skip_private_percentage(fields) }}
+            {{ all_settings.skip_no_profile_pic(fields) }}
+            {{ all_settings.skip_no_profile_pic_percentage(fields) }}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.skip_and_avoid_hashtags_list(fields) }}
+            {{ all_settings.ignore_skip_hashtags_if_contains_list(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3 {{ get_visibility_classes('advanced') }}">
+          <div class="card-body">
+            {{ all_settings.skip_business(fields) }}
+            {{ all_settings.skip_business_percentage(fields) }}
+            {{ all_settings.skip_business_categories(fields) }}
+            {{ all_settings.dont_skip_business_categories(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3 {{ get_visibility_classes('expert') }}">
+          <div class="card-body">
+            {{ all_settings.skip_first_top_posts(fields) }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div id="section-other" class="card-separator"></div>
+<div class="card">
+  <div class="card-header unique-color-dark">
+    <h5 class="d-inline white-text m-0"><i class="fas fa-cogs mr-3"></i>Other</h5>
+    <h4 class="d-inline m-0 float-right">
+      <a class="white-text d-inline mr-3" href="#section-ignores"><i class="fas fa-angle-up"></i></a>
+    </h4>
+  </div>
+  <div class="card-body">
+    <div class="form-row">
+
+      <div class="col-md-6">
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.run_forever(fields) }}
+          </div>
+        </div>
+
+        <div class="card mb-3 {{ get_visibility_classes('advanced') }}">
+          <div class="card-body">
+            {{ all_settings.user_interact_number_of_posts(fields) }}
+            {{ all_settings.user_interact_percentage(fields) }}
+            {{ all_settings.user_interact_randomize(fields) }}
+            <div>
+            Options set here will affect "Make additional actions"
+            for other settings where it can be enabled.
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+
+        <div class="card mb-3">
+          <div class="card-body">
+            {{ all_settings.do_like_by_smart_hashtags(fields) }}
+            {{ all_settings.do_follow_by_smart_hashtags(fields) }}
+            {{ all_settings.smart_hashtags_list(fields) }}
+            {{ all_settings.smart_hashtags_limit(fields) }}
+            {{ all_settings.smart_hashtags_sort(fields) }}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="card-separator"></div>
+
+{%- if custom_lists_sorted_by_type -%}
+  {{ all_settings.custom_lists_picker_lists(custom_lists_sorted_by_type) }}
+{%- endif -%}

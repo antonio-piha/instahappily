@@ -1,0 +1,162 @@
+{%- extends "layout.jinja2" -%}
+{%- from "_elements.jinja2" import profile_link with context -%}
+
+{% block navbar %}
+
+  <li class="nav-item">
+    <a class="" href="/app-settings">
+      <button type="button" class="btn btn-primary btn-sm">
+        <i class="fas fa-wrench mr-1"></i> App Settings
+      </button>
+    </a>
+  </li>
+
+  {# Not enabled currently #}
+  {# <li class="nav-item">
+    <a class="" href="/profile-settings-defaults">
+      <button type="button" class="btn btn-primary btn-sm">
+        <i class="fas fa-sliders-h mr-1"></i> Profiles defaults
+      </button>
+    </a>
+  </li> #}
+
+  <li class="nav-item">
+    <a class="" href="/session-settings-defaults">
+      <button type="button" class="btn btn-primary btn-sm">
+        <i class="fas fa-sliders-h mr-1"></i> Sessions defaults
+      </button>
+    </a>
+  </li>
+{% endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    HOME
+  </li>
+{%- endblock -%}
+
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-6 col-md-4">
+      <a href="/profiles" class="hoverable d-block">
+        <div class="card mb-3">
+          <div class="card-body text-center">
+            <span class="badge badge-pill indigo mr-2 p-2"><i class="fas fa-users fa-2x"></i></span>
+            <h5 class="d-inline"><span class="mr-2">{{ counters['profiles'] }}</span>
+              Profile{%- if counters['profiles'] != 1 -%}s{%- endif -%}
+            </h5>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="card mb-3">
+        <div class="card-body text-center">
+          <span class="badge badge-pill info-color-dark mr-2 p-2"><i class="fas fa-cubes fa-2x"></i></span>
+          <h5 class="d-inline"> <span class="mr-2">{{ counters['sessions'] }}</span>
+            Session{%- if counters['sessions'] != 1 -%}s{%- endif -%}
+          </h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4">
+      <a href="/custom-lists" class="hoverable d-block">
+        <div class="card mb-3">
+          <div class="card-body text-center">
+            <span class="badge badge-pill warning-color-dark mr-2 p-2"><i class="fas fa-th-list fa-2x"></i></span>
+            <h5 class="d-inline"><span class="mr-2">{{ counters['custom_lists'] }}</span>
+              List{%- if counters['custom_lists'] != 1 -%}s{%- endif -%}
+            </h5>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4">
+      <a href="/follower-following-tools" class="hoverable d-block">
+        <div class="card mb-3">
+          <div class="card-body text-center">
+            <span class="badge badge-pill success-color-dark mr-2 p-2"><i class="fas fa-flask fa-2x"></i></span>
+            <h5 class="d-inline"><span class="mr-2">{{ counters['tool_requests'] }}</span>
+              Tool{%- if counters['tool_requests'] != 1 -%}s{%- endif -%}
+            </h5>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4">
+      <a href="/proxies" class="hoverable d-block">
+        <div class="card mb-3">
+          <div class="card-body text-center">
+            <span class="badge badge-pill danger-color-dark mr-2 p-2"><i class="fas fa-plug fa-2x"></i></span>
+            <h5 class="d-inline"><span class="mr-2">{{ counters['proxies'] }}</span>
+              {%- if counters['proxies'] != 1 -%}Proxies{%- else -%}Proxy{%- endif -%}
+            </h5>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="card my-3">
+    <div class="card-header unique-color-dark white-text">
+      <i class="fas fa-cubes mr-3"></i>Sessions
+    </div>
+    <div class="card-body p-2">
+
+      <div class="table-responsive">
+      <table class="table table-striped table-hover js-data-table" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th class="th-sm">Profile</th>
+            <th class="th-sm">Name</th>
+            <th class="th-sm">Proxy</th>
+            <th class="th-sm">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for session in sessions -%}
+            {%- set running = SessionService.is_session_running(session.id) -%}
+            <tr>
+              <td>
+                {{ profile_link(session.profile) }}
+              </td>
+              <td>
+                <h6>
+                  <a class="" href="/session/{{session.id}}/settings">
+                    <button type="button" class="btn btn-outline-primary btn-rounded btn-sm">
+                      <i class="fas fa-cube mr-2"></i>{{ session.name }}
+                    </button>
+                  </a>
+                </h6>
+              </td>
+              <td>
+                {%- if session in sessions_with_proxy_enabled -%}
+                  <span class="badge badge-pill badge-success badge-align-middle">
+                    <i class="fas fa-check"></i>
+                  </span>
+                {%- else -%}
+                  <span class="badge badge-pill badge-danger badge-align-middle">
+                    <i class="fas fa-times"></i>
+                  </span>
+                {%- endif -%}
+              </td>
+              <td>
+                <h6>
+                {%- if running -%}
+                  <span class="badge badge-pill badge-success badge-align-middle">Running</span>
+                {%- else -%}
+                  <span class="badge badge-pill badge-light badge-align-middle">Stopped</span>
+                {%- endif -%}
+                </h6>
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+{%- endblock %}

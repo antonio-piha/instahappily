@@ -1,0 +1,2690 @@
+{%- from "_formhelpers.jinja2" import render_field, render_example, render_submit, settings_element_basic, settings_time, setting_list_with_custom_list_picker with context -%}
+{%- from "_elements.jinja2" import top_bar with context -%}
+
+{# OTHER #}
+{%- macro settings_actions_bar(render_actions_only=false) -%}
+  {%- set parent_caller = caller -%}
+  {%- call top_bar(omit_top_bar_wrapper=render_actions_only) -%}
+    {{ parent_caller() }}
+    <li class="nav-item js-action-change-settings-view-level">
+
+      <div class="dropdown settings-view-level-drop-down-menu">
+        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="settings-view-level-drop-down-menu" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-layer-group mr-1"></i>Mode
+        </button>
+          <div class="dropdown-menu" aria-labelledby="settings-view-level-drop-down-menu">
+          {%- set possible_values = {
+            'simple' : 'Simple',
+            'advanced' : 'Advanced',
+            'expert' : 'Expert'
+          } -%}
+          {%- for level, text in possible_values.items() -%}
+            <a class="dropdown-item {% if level == app_settings.settings_view_level -%} active {%- endif -%}"
+                href="#" data-level="{{ level }}">{{ text }}
+            </a>
+          {%- endfor -%}
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item js-action-toggle-all-settings-help">
+            Toggle all settings help
+          </a>
+        </div>
+      </div>
+
+    </li>
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+{# COMMON #}
+
+{%- macro settings_sleep_delay(field, label=none, icon=none, description=none, show_info_button=true, possible_values=none) -%}
+  {%- set parent_caller = caller -%}
+  {%- set defined_timings_dict = {
+    '60' : '1 minute',
+    '600' : '10 minutes',
+    '1800' : '30 minutes',
+    '3600' : '1 hour'
+  } -%}
+  {%- call(part) settings_time(field=field, label=label, icon=icon, description=description, show_info_button=show_info_button,
+                visible='expert', possible_values=possible_values, defined_timings_dict=defined_timings_dict) -%}
+    {{ parent_caller(part) }}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro setting_unfollow_style(field, label='') -%}
+  {%- set possible_values = {
+    'RANDOM' : 'Random',
+    'FIFO' : 'Fist in first out',
+    'LIFO' : 'Last in first out'
+  } -%}
+  {%- call(part) settings_element_basic(field, label=label, possible_values=possible_values, visible='expert') -%}
+    {%- if part == 'description' -%}
+      <div><b>First in first out</b> - InstaHappily will unfollow users in the exact order as they are in the list</div>
+      <div><b>Last in first out</b> - InstaHappily will unfollow users in the reverse order as they are in the list</div>
+      <div><b>Random</b> - InstaHappily will unfollow users randomly from the list</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro setting_unfollow_after(field, label, description=none) -%}
+  {%- set defined_timings_dict = {
+    '43200' : '12 hours',
+    '86400' : '1 day',
+    '259200' : '3 days',
+    '604800' : '1 week'
+  } -%}
+  <div class="mt-4">
+    {%- call(part) settings_time(field, label=label, description=description,
+      visible='advanced', defined_timings_dict=defined_timings_dict) -%}
+      {%- if part == 'description' -%}
+        <div>Set the time that user has to be followed for, before it can be unfollowed.</div>
+        <div>Setting will limit the unfollow of the user to happen before you followed the user for amount of time defined here.</div>
+        <div>If set to 0 every user that was previously followed could be unfollowed, because there's no time constraint.</div>
+        {%- call render_example('86400') -%}
+          <div>InstaHappily won't unfollow user before he has been followed for 1 day (86400 seconds).</div>
+        {%- endcall -%}
+      {%- endif -%}
+    {%- endcall -%}
+  </div>
+{%- endmacro -%}
+
+{%- set business_categories = [
+'Advertising Agency',
+'Advertising/Marketing',
+'Art',
+'Art Gallery',
+'Art Museum',
+'Artist',
+'Arts & Entertainment',
+'Arts & Humanities Website',
+'Athlete',
+'Auto Dealers',
+'Business & Utility Services',
+'Clothing Store',
+'Community',
+'Community Organization',
+'Company',
+'Consulting Agency',
+'Content & Apps',
+'Creators & Celebrities',
+'Education',
+'Food & Personal Goods',
+'General Interest',
+'Graphic Designer',
+'Home Goods Stores',
+'Home Services',
+'Jewelry/Watches',
+'Lifestyle Services',
+'Local Business',
+'Local Events',
+'Management Service',
+'Media/News Company',
+'Non-Profits & Religious Organizations',
+'Party Entertainment Service',
+'Personal Goods & General Merchandise Stores',
+'Photographer',
+'Photography Videography',
+'Product/Service',
+'Professional Service',
+'Professional Sports Team',
+'Public Figure',
+'Public Relations Agency',
+'Publishers',
+'Restaurants',
+'Ski Resort',
+'Sport',
+'Sports & Recreation',
+'Transportation & Accomodation Services',
+'Travel Agency',
+'Wine/Spirits'
+] -%}
+{%- set business_categories_possible_values = list_to_dict(business_categories) -%}
+
+
+
+
+{# ############################################################################### #}
+{# Session Settings #}
+{# ############################################################################### #}
+
+
+{# Likes #}
+
+{%- macro do_liking(fields) -%}
+  {%- set field = fields.get('do_liking', none) -%}
+  {%- call(part) settings_element_basic(field, label='Enable like posts') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will like users posts</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro liking_percentage(fields) -%}
+  {%- set field = fields.get('liking_percentage', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Like every N-th post',
+    description='Set to 1 to like every post') -%}
+    {%- if part == 'description' -%}
+      <div>Every N-th posts will be liked, instead of every post.</div>
+      {%- call render_example('5') -%}
+        <div>From the posts InstaHappily is about to like it will like every 5th post.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro delimit_liking(fields) -%}
+  {%- set field = fields.get('delimit_liking', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Decide whether to like posts based on amount of existing likes') -%}
+    {%- if part == 'description' -%}
+      <div>If turned on, InstaHappily will decide to like posts or not, based on the amount of existing likes that post has.</div>
+      <div>Options minimum and maximum number of existing likes per post is taken in consideration.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro min_likes_per_post(fields) -%}
+  {%- set field = fields.get('min_likes_per_post', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Minimum number of existing likes per post',
+    description='Leave empty to disable this limit') -%}
+    {%- if part == 'description' -%}
+      <div>The post will be liked only if, it has equal or more of existing likes than set here.</div>
+      <div>Valid only if setting "Decide to like posts based on amount of existing likes" is enabled.</div>
+      <div>To disable this limit leave it empty.</div>
+      {%- call render_example('5') -%}
+        <div>If post has at least 5 likes InstaHappily will like the post.</div>
+        <div>If post has 4 likes InstaHappily will not like it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro max_likes_per_post(fields) -%}
+  {%- set field = fields.get('max_likes_per_post', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Maximum number of existing likes per post',
+    description='Leave empty to disable this limit') -%}
+    {%- if part == 'description' -%}
+      <div>The post will be liked only if, it has equal or less of existing likes than set here.</div>
+      <div>Valid only if setting "Decide to like posts based on amount of existing likes" is enabled.</div>
+      <div>To disable this limit leave it empty</div>
+      {%- call render_example('5') -%}
+        <div>If post has at least 5 likes InstaHappily will like the post.</div>
+        <div>If post has 6 likes InstaHappily will not like it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_tags_list(fields) -%}
+  {%- set field = fields.get('like_by_tags_list', none) -%}
+  {%- set custom_list_field = fields.get('like_by_tags_custom_list', none) -%}
+  {% if custom_list_field == none %}
+{{ "required_parameter must be defined."/0 }}
+{% endif %}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='hashtags',
+    label='Like posts by these hashtags', icon='hashtag') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily fill find posts tagged with these hashtags. It will go through the list, one by one, find the posts
+      that has that hashtag and then it will like the post.</div>
+      <div>Post needs to have only one of these hashtags, not all of the hashtags from this list.</div>
+      <div>Don't include # sign (hash) in the hashtag, just put the tag.</div>
+      {%- call render_example('loveinsta') -%}
+        <div>InstaHappily will find posts tagged with #loveinsta and it will like those posts.</div>
+      {%- endcall -%}
+      {%- call render_example('amazing') -%}
+        <div>InstaHappily will find posts tagged with #amazing and it will like those posts.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_tags_amount(fields) -%}
+  {%- set field = fields.get('like_by_tags_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of posts to like per hashtag') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will like maximum of N posts per each hashtag from the list "Like posts by these hashtags". Amount set here.</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will like exactly 5 posts per each hashtag from the list.</div>
+        <div>If the list has 2 hashtags it would result with 10 post likes.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_tags_randomize(fields) -%}
+  {%- set field = fields.get('like_by_tags_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Randomly like by hashtags list') -%}
+    {%- if part == 'description' -%}
+    <div>InstaHappily will randomly pick hashtags from the list "Like posts by these hashtags"</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_user_list(fields) -%}
+  {%- set field = fields.get('like_by_user_list', none) -%}
+  {%- set custom_list_field = fields.get('like_by_user_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Like posts from these users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will go trough each user from this list and will like those users posts.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will like posts made by user @InstaUserABC.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_user_amount(fields) -%}
+  {%- set field = fields.get('like_by_user_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Amount of posts to like for each user') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will like N amount of posts per user from list "Like posts from these users"</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will like 5 posts made by user @InstaUserABC.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_user_randomize(fields) -%}
+  {%- set field = fields.get('like_by_user_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Randomly like users posts') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will randomly like posts for users from list "Like posts from these users"</div>
+      <div>If disabled, InstaHappily will go through posts starting with newest post.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro ignore_users_by_user_list(fields) -%}
+  {%- set field = fields.get('ignore_users_by_user_list', none) -%}
+  {%- set custom_list_field = fields.get('ignore_users_by_user_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Ignore these users from any action', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will completely ignore users on this list.
+       No actions will be made (likes, comments, follows or unfollows) on these users or their posts. </div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily won't like posts, comment on posts, follow or unfollow user @InstaUserABC.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro do_like_by_feed(fields) -%}
+  {%- set field = fields.get('do_like_by_feed', none) -%}
+  {%- call(part) settings_element_basic(field, label='Like posts on your own feed') -%}
+    {%- if part == 'description' -%}
+      <div>Enable or disable liking on posts that will came up on your own feed</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_feed_amount(fields) -%}
+  {%- set field = fields.get('like_by_feed_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of posts to like from your feed') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make on likes on this amount of posts from your feed.</div>
+      {% call render_example('50') %}
+        <div>InstaHappily will like exactly 50 posts that will appear on your feed.</div>
+      {% endcall %}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_feed_randomize(fields) -%}
+  {%- set field = fields.get('like_by_feed_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Randomly like posts on your feed') -%}
+    {%- if part == 'description' -%}
+      <div>Enable to randomly skip posts from your feed that would be liked</div>
+      <div>If disabled, InstaHappily will take posts in a top-down style.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_feed_unfollow(fields) -%}
+  {%- set field = fields.get('like_by_feed_unfollow', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Unfollow the owners of a posts from feed that are considered inappropriate') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will unfollow owners of a posts from your feed that are considered inappropriate.</div>
+      <div>Post is inappropriate, if InstaHappily finds the post but doesn't like it based on other settings in the session.</div>
+      <div>InstaHappily can only unfollow users you are following.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro exclude_friends_list(fields) -%}
+  {%- set field = fields.get('exclude_friends_list', none) -%}
+  {%- set custom_list_field = fields.get('exclude_friends_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Exclude these users from commenting and unfollowing', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>Use this to skip accounts, e.g. your friends, when making comments and unfollowing.</div>
+      <div>InstaHappily will exclude users from this list when commeting or unfollowing.</div>
+      <div>Difference between this option and option "Ignore these users from any action" is that InstaHappily will still like photos of the users on this list.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will skip @InstaUserABC when making comments and unfollows.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_and_avoid_hashtags_list(fields) -%}
+  {%- set field = fields.get('skip_and_avoid_hashtags_list', none) -%}
+  {%- set custom_list_field = fields.get('skip_and_avoid_hashtags_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='hashtags',
+    label='Skip and avoid these hashtags', icon='hashtag') -%}
+    {%- if part == 'description' -%}
+    <div>InstaHappily will skip and avoid the post if it's description or owner comments contains any of hashtags given here.</div>
+    <div>Four options are available per hashtag:</div>
+    <ul>
+      <li class="mt-3"><div><b>Option: Contains</b></div>
+        <div>Prefix: <i>no prefix</i></div>
+        <div>Without any prefix sign in front of the word will match hashtags that contains word given</div>
+        {%- call render_example('dog') -%}
+          <div>Matches hashtags "dog", "bigdoglover", "catsanddogsofinsta", etc.</div>
+          <div>Doesn't match hashtags that doesn't contain word "dog" like "menofinsta", "womenofgram", etc.</div>
+        {%- endcall -%}
+      </li>
+      <li class="mt-3"><div><b>Option: Exact match</b></div>
+        <div>Prefix: #</div>
+        <div># sign in front of the word will match only exact hashtags
+        {%- call render_example('#dog') -%}
+          <div>Matches only hashtag "dog" and nothing else. Doesn't match hashtags like "dogs", "mydog", etc.</div>
+        {%- endcall -%}
+      </li>
+      <li class="mt-3"><div><b>Option: Starts with</b></div>
+        <div>Prefix: [</div>
+        <div>[ sign in front of the word will match hashtags starting with the word given</div>
+        {%- call render_example('[dog') -%}
+          <div>Matches "dog", "doggies", "doginsta", etc. Doesn't match hashtags like "mydog", "underdog", etc.</div>
+        {%- endcall -%}
+      </li>
+      <li class="mt-3"><div><b>Option: Ends with</b></div>
+        <div>Prefix: ]</div>
+        <div>] sign in front of the word will match hashtags ending with the word given</div>
+        {%- call render_example(']dog') -%}
+          <div>Matches "mydog", "lovedog", etc. Doesn't match hashtags like "doggie", "doglove", etc.</div>
+        {%- endcall -%}
+      </li>
+    </ul>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro ignore_skip_hashtags_if_contains_list(fields) -%}
+  {%- set field = fields.get('ignore_skip_hashtags_if_contains_list', none) -%}
+  {%- set custom_list_field = fields.get('ignore_skip_hashtags_if_contains_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='hashtags',
+    visible="advanced", label='Ignore "Skip and avoid hashtags" rules if post contains these words ', icon='hashtag') -%}
+    {%- if part == 'description' -%}
+    <div>InstaHappily will ignore the "Skip and avoid hashtags" rules and will not skip the post, if post's description contains any of the words given here.</div>
+    <div>Put words on this list and not hashtags.</div>
+    {%- call render_example('food') -%}
+      <div>"Skip and avoid hashtags" list contains hashtag #proper.</div>
+      <div>InstaHappily comes across the post that contains hashtag #proper.</div>
+      <div>Alos that post contains word "food" in the post's description.</div>
+      <div>InstaHappily will not skip this post because skip rules were overriden.</div>
+    {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+{%- macro like_by_locations_list(fields) -%}
+  {%- set field = fields.get('like_by_locations_list', none) -%}
+  {%- set custom_list_field = fields.get('like_by_locations_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='locations',
+    label='Like posts based on locations', icon='map-marker-alt') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will like posts that are based on these locations.</div>
+      <div>Locations are processed one by one in a top-down style.</div>
+      <ul>Locations can be found by:
+        <li>Navigating through <b><a href="https://www.instagram.com/explore/locations/" target="_blank">https://www.instagram.com/explore/locations/</a></b></li>
+        <li>Instagram search</li>
+      </ul>
+      <div>If the location url is: <b>https://www.instagram.com/explore/locations/221379350/the-north-pole/</b></div>
+      <div>Use everything till the end (or just the number) after <b>https://www.instagram.com/explore/locations/</b></div>
+      <div>to get final and correct location: <b>221379350/the-north-pole/</b></div>
+      {%- call render_example('c815012/richmond-united-kingdom/')-%}
+        <div>InstaHappily will like posts which tagged Richmond, United Kingdom.</div>
+      {%- endcall -%}
+      {%- call render_example('256266910')-%}
+        <div>InstaHappily will like posts which tagged London City, United Kingdom.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_locations_amount(fields) -%}
+  {%- set field = fields.get('like_by_locations_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Maximum amount of posts to like per location') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will like maximum of N posts per location. Amount set here.</div>
+      <div>Valid only if setting "Like posts based on locations" has at least one location.</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will like 5 posts per location and no more.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{# Follow #}
+{%- macro do_following(fields) -%}
+  {%- set field = fields.get('do_following', none) -%}
+  {%- call(part) settings_element_basic(field, label='Enable following') -%}
+    {%- if part == 'description' -%}
+      <div>Enable or disable following user whose post was liked.</div>
+      <div>If this is turned off and the post was liked, user won't be followed.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_percentage(fields) -%}
+  {%- set field = fields.get('follow_percentage', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Follow every N-th account') -%}
+    {%- if part == 'description' -%}
+      <div>Follow every N-th account whose post has been liked.</div>
+      {%- call render_example('5') -%}
+        <div>Every 5th user will be followed. If InstaHappily like 10 posts then it will follow 2 accounts from the list of posts that were liked.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_times(fields) -%}
+  {%- set field = fields.get('follow_times', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Follow same user again no more than N times') -%}
+    {%- if part == 'description' -%}
+      <div>If the user, that InstaHappily followed, gets unfollowed, this will limit InstaHappily to follow the same user again, to maximum N times set here.</div>
+      {%- call render_example('1') -%}
+        <div>If the user, that InstaHappily followed, gets unfollowed, InstaHappily won't follow that same user again becasue maximum follows times is set to 1.</div>
+      {%- endcall -%}
+      {%- call render_example('2') -%}
+        <div>Simple scenario:</div>
+        <div>This setting is set to 2.</div>
+        <div>InstaHappily follow user @InstaUser.</div>
+        <div>InstaHappily unfollow user @InstaUser.</div>
+        <div>InstaHappily follow user @InstaUser.</div>
+        <div>InstaHappily unfollow user @InstaUser.</div>
+        <div>In the future InstaHappily won't follow user @InstaUser again because it was already followed 2 times.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_username_list(fields) -%}
+  {%- set field = fields.get('follow_username_list', none) -%}
+  {%- set custom_list_field = fields.get('follow_username_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Follow users from this list', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will follow every account from this list.</div>
+      <div>No need to put @ in the username</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_username_times(fields) -%}
+  {%- set field = fields.get('follow_username_times', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Follow users from the list up to N times') -%}
+    {%- if part == 'description' -%}
+      <div>If the user, which is on the "Follow users from this list" option, that InstaHappily followed, gets unfollowed, this will limit InstaHappily to follow the same user again, to maximum N times set here.</div>
+      {%- call render_example('1') -%}
+        <div>If the user, that InstaHappily followed, gets unfollowed, InstaHappily won't follow that same user again becasue maximum follows times is set to 1.</div>
+      {%- endcall -%}
+      {%- call render_example('2') -%}
+        <div>Simple scenario:</div>
+        <div>User @InstaUser is on the option list "Follow users from this list"</div>
+        <div>This setting is set to 2.</div>
+        <div>InstaHappily follow user @InstaUser.</div>
+        <div>InstaHappily unfollow user @InstaUser.</div>
+        <div>InstaHappily follow user @InstaUser.</div>
+        <div>InstaHappily unfollow user @InstaUser.</div>
+        <div>In the future InstaHappily won't follow user @InstaUser again because it was already followed 2 times.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_username_sleep_delay(fields) -%}
+  {%- set field = fields.get('follow_username_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay when following users') -%}
+    {%- if part == 'description' -%}
+      <div>Sleep delay is used to define break time after following few accounts (averagely ~10 follows)</div>
+      <div>Time is in seconds</div>
+      {%- call render_example('500') -%}
+        <div>After InstaHappily follow 10 users from the list of "Follow users from the list", it will sleep for 500 seconds before continuing to follow the rest from the list.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_followers_list(fields) -%}
+  {%- set field = fields.get('follow_user_followers_list', none) -%}
+  {%- set custom_list_field = fields.get('follow_user_followers_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Follow the followers of the users from this list', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>Follows the followers of each user on this list</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will follow the followers of instagram account @InstaUserABC.</div>
+        <div>Let's say account @OtherInstaAccount is following the user @InstaUserABC.</div>
+        <div>Because of that InstaHappily will start to follow user @OtherInstaAccount.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_followers_amount(fields) -%}
+  {%- set field = fields.get('follow_user_followers_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Follow the amount of the followers of the users from the list') -%}
+    {%- if part == 'description' -%}
+      <div>Amount given here refers to each account from the list of "Follow the followers of the users from this list"</div>
+      {%- call render_example('20') -%}
+        <div>If the list "Follow the followers of the users from this list" has 3 usernames in it that means InstaHappily will follow 3 * 20 = 60 users in total.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_followers_randomize(fields) -%}
+  {%- set field = fields.get('follow_user_followers_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Follow the followers of the users randomly') -%}
+    {%- if part == 'description' -%}
+      <div>If randomize is disabled it will pick the list "Follow the followers of the users from this list" in a top-down style.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_followers_sleep_delay(fields) -%}
+  {%- set field = fields.get('follow_user_followers_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for follow the followers of the users') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user followed InstaHappily will sleep for time in seconds given here.</div>
+      {%- call render_example('600') -%}
+        <div>After following few users InstaHappily will sleep for 600 seconds before continue.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_following_list(fields) -%}
+  {%- set field = fields.get('follow_user_following_list', none) -%}
+  {%- set custom_list_field = fields.get('follow_user_following_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Follow users who are followed by these users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will follow users who are followed by the users from this list.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will follow the accounts that Instagram account @InstaUserABC is following.</div>
+        <div>Let's say account @InstaUserABC is following user @OtherInstaAccount.</div>
+        <div>Then InstaHappily will follow user @OtherInstaAccount.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_following_amount(fields) -%}
+  {%- set field = fields.get('follow_user_following_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of users (who are followed by the users from the list) to follow') -%}
+    {%- if part == 'description' -%}
+      <div>The given amount refers to each user from the list "Follow users who are followed by these users".</div>
+      {%- call render_example('20') -%}
+        <div>If the list "Follow users who are followed by these users" has 3 usernames in it that means InstaHappily will follow 3 * 20 = 60 users in total.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_following_randomize(fields) -%}
+  {%- set field = fields.get('follow_user_following_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Follow users (who are followed by the users from the list) randomly') -%}
+    {%- if part == 'description' -%}
+      <div>If randomize is disabled it will pick the list "Follow users who are followed by these users" in a top-down style.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_user_following_sleep_delay(fields) -%}
+  {%- set field = fields.get('follow_user_following_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for follow users (who are followed by the users from the list)') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user followed InstaHappily will sleep for time in seconds given here.</div>
+      {%- call render_example('600') -%}
+        <div>After following few users InstaHappily will sleep for 600 seconds before continue.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_by_tags_list(fields) -%}
+  {%- set field = fields.get('follow_by_tags_list', none) -%}
+  {%- set custom_list_field = fields.get('follow_by_tags_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Follow users by list of hashtags', icon='hashtag') -%}
+    {%- if part == 'description' -%}
+      <div>Find posts tagged with hashtags from this list and follow the users who posted those posts.</div>
+      <div>Posts won't be liked or commented on.</div>
+      {%- call render_example('besthashtag') -%}
+        <div>Find posts tagged with "#besthashtag" and follow the users who posted the post.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_by_tags_amount(fields) -%}
+  {%- set field = fields.get('follow_by_tags_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of users to follow by list of hashtags') -%}
+    {%- if part == 'description' -%}
+      <div>For each hashtag from list "Follow users by list of hashtags", InstaHappily will follow this amount of users.</div>
+      {%- call render_example('10') -%}
+        <div>Find posts with hashtag from the list and follow 10 users who posted the post with that hashtag.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_by_locations_list(fields) -%}
+  {%- set field = fields.get('follow_by_locations_list', none) -%}
+  {%- set custom_list_field = fields.get('follow_by_locations_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='locations',
+    label='Follow users by list of locations', icon='map-marker-alt') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will follow users which posts are based on these locations.</div>
+      <div>Locations are processed one by one in a top-down style.</div>
+      <ul>Locations can be found by:
+        <li>Navigating through <b><a href="https://www.instagram.com/explore/locations/" target="_blank">https://www.instagram.com/explore/locations/</a></b></li>
+        <li>Instagram search</li>
+      </ul>
+      <div>If the location url is: <b>https://www.instagram.com/explore/locations/221379350/the-north-pole/</b></div>
+      <div>Use everything till the end (or just the number) after <b>https://www.instagram.com/explore/locations/</b></div>
+      <div>to get final and correct location: <b>221379350/the-north-pole/</b></div>
+      {%- call render_example('c815012/richmond-united-kingdom/')-%}
+        <div>InstaHappily will follow users whos posts are tagged in Richmond, United Kingdom.</div>
+      {%- endcall -%}
+      {%- call render_example('256266910')-%}
+        <div>InstaHappily will follow users whos posts are tagged in London City, United Kingdom.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_by_locations_amount(fields) -%}
+  {%- set field = fields.get('follow_by_locations_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of users to follow by list of locations') -%}
+    {%- if part == 'description' -%}
+      <div>For each location from list "Follow users by list of locations", InstaHappily will follow this amount of users.</div>
+      {%- call render_example('10') -%}
+        <div>Find posts with locations from the list and follow 10 users who posted the post with that location.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_likers_list(fields) -%}
+  {%- set field = fields.get('follow_likers_list', none) -%}
+  {%- set custom_list_field = fields.get('follow_likers_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Follow accounts who liked posts from these users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>Follow the likers of posts from users from this list.</div>
+      <div>This should be a list of accounts which InstaHappily will use to find their posts and
+      to follow users whose liked their posts.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will find posts posted by user @InstaUserABC.</div>
+        <div>User @OtherInstaAccount liked the post posted by @InstaUserABC that InstaHappily found.</div>
+        <div>InstaHappily will follow user @OtherInstaAccount because that user liked the post from @InstaUserABC.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_likers_photos_grab_amount(fields) -%}
+  {%- set field = fields.get('follow_likers_photos_grab_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of posts to collect for each user from the list') -%}
+    {%- if part == 'description' -%}
+      <div>Set this to limit the amount of posts to collect from users profile for analysis.</div>
+      {%- call render_example('10') -%}
+        <div>For each user InstaHappily will collect 10 posts and analyse likers.</div>
+        <div>If the list has 3 users, 3 * 10 = 30 posts will be grabbed to collect likers.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_likers_per_photo(fields) -%}
+  {%- set field = fields.get('follow_likers_per_photo', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of likers to follow per post') -%}
+    {%- if part == 'description' -%}
+      <div>Number of how many users, per each post, will InstaHappily follow</div>
+      {%- call render_example('5') -%}
+        <div>Setting this will limit the follows to 5 likers for each post of the users from the list.</div>
+        <div>Only 5 new follows can be made per each post.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_likers_randomize(fields) -%}
+  {%- set field = fields.get('follow_likers_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Randomly follow users that liked posts from user list') -%}
+    {%- if part == 'description' -%}
+      <div>This setting is affecting posts, not the users. </div>
+      <div>Disabling this setting means posts will be taken from newest to oldest. Otherwise they will be taken randomly.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_likers_sleep_delay(fields) -%}
+  {%- set field = fields.get('follow_likers_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for follow accounts that liked posts from user list') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user that InstaHappily follows, it will sleep for amount of seconds given here</div>
+      {%- call render_example('600') -%}
+        <div>After following few users InstaHappily will sleep for 600 seconds before continue with following other accounts.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_commenters_list(fields) -%}
+  {%- set field = fields.get('follow_commenters_list', none) -%}
+  {%- set custom_list_field = fields.get('follow_commenters_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Follow users who commented on posts from these users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will follow users whose commented on posts from users on this list</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will find posts posted by user @InstaUserABC.</div>
+        <div>User @OtherInstaAccount commented on the post posted by @InstaUserABC.</div>
+        <div>InstaHappily will follow user @OtherInstaAccount because of his on that post.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_commenters_amount(fields) -%}
+  {%- set field = fields.get('follow_commenters_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of users to follow, who commented on posts') -%}
+    {%- if part == 'description' -%}
+      <div>Amount of users to follow per each commenter on posts from users from
+      list "Follow users that commented on posts from these users"</div>
+      {%- call render_example('5') -%}
+        <div>Setting this will limit the follows to 5 commenters for each post of the users from the list.</div>
+        <div>Only 5 new follows per each post can be made.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_commenters_daysold(fields) -%}
+  {%- set field = fields.get('follow_commenters_daysold', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Follow commenters on posts which are N days old') -%}
+    {%- if part == 'description' -%}
+      <div>Analyse only posts that are younger than days set here.</div>
+      <div>Number is in days.</div>
+      {%- call render_example('150') -%}
+        <div>InstaHappily will collect posts that are not older than 150 days.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_commenters_max_pic(fields) -%}
+  {%- set field = fields.get('follow_commenters_max_pic', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Maximum number of posts to analyze') -%}
+    {%- if part == 'description' -%}
+      <div>This will be the maximum number of posts from each user from the list that could be analyzed.</div>
+      {%- call render_example('100') -%}
+        <div>InstaHappily will collect maximum 100 newest posts.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_commenters_sleep_delay(fields) -%}
+  {%- set field = fields.get('follow_commenters_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for follow commenters') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user that InstaHappily follow, it will sleep for amount of seconds given here.</div>
+      {%- call render_example('600') -%}
+        <div>After following few users InstaHappily will sleep for 600 seconds before continue with following other accounts.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{# Unfollow #}
+
+{%- macro unfollow_custom_list(fields) -%}
+  {%- set field = fields.get('unfollow_custom_list', none) -%}
+  {%- set custom_list_field = fields.get('unfollow_custom_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Unfollow these users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will unfollow users from this list</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will unfollow users @InstaUserABC, if you are following him.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_custom_list_amount(fields) -%}
+  {%- set field = fields.get('unfollow_custom_list_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of users to unfollow',
+    description='Leave empty to include all from list') -%}
+    {%- if part == 'description' -%}
+      <div>This is the maximum number of users that can be unfollowed from the list "Unfollow these users".</div>
+      <div>If the list is big and you don't want to modify the list, here you can set the amount of user that will be unfollowed.</div>
+      <div>If left empty InstaHappily will unfollow all from the list.</div>
+      {%- call render_example('3') -%}
+        <div>If the list has 10 users, InstaHappily will unfollow only 3 users.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_custom_list_track(fields) -%}
+  {%- set field = fields.get('unfollow_custom_list_track', none) -%}
+  {%- set possible_values = {
+    'all' : 'All (followers and non-followers)',
+    'nonfollowers' : 'Non-followers only',
+  } -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Users type to unfollow', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>"All" - unfollow all the users from the list</div>
+      <div>"Non-followers" - unfollow only users from the list who are not following you</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_custom_list_style(fields) -%}
+  {%- set field = fields.get('unfollow_custom_list_style', none) -%}
+  {{ setting_unfollow_style(field, label='Way to go through the unfollow list') }}
+{%- endmacro -%}
+
+{%- macro unfollow_custom_list_unfollow_after(fields) -%}
+  {%- set field = fields.get('unfollow_custom_list_unfollow_after', none) -%}
+  {{ setting_unfollow_after(field, label='Unfollow users only after you followed them for this period',
+    description='To disable set to 0') }}
+{%- endmacro -%}
+
+{%- macro unfollow_custom_list_sleep_delay(fields) -%}
+  {%- set field = fields.get('unfollow_custom_list_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for unfollow by list') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user that InstaHappily unfollow, it will sleep for amount of seconds given here</div>
+      {%- call render_example('600') -%}
+        <div>After unfollowing few users InstaHappily will sleep for 600 seconds before continue with unfollowing other accounts.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro do_unfollow_who_we_followed(fields) -%}
+  {%- set field = fields.get('do_unfollow_who_we_followed', none) -%}
+  {%- call(part) settings_element_basic(field, label='Unfollow the users which are followed by InstaHappily') -%}
+    {%- if part == 'description' -%}
+      <div>Unfollow users that were previously followed only by InstaHappily.
+      Users that were followed by you manually will be skipped and you'll still follow them.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily followed user @InstaUserABC.</div>
+        <div>User @InstaUserABC will be unfollowed.</div>
+      {%- endcall -%}
+      {%- call render_example('InstaUserDCE') -%}
+        <div>You followed user @InstaUserDCE, but InstaHappily never followed user @InstaUserDCE.</div>
+        <div>User @InstaUserDCE will not be unfollowed.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_who_we_followed_amount(fields) -%}
+  {%- set field = fields.get('unfollow_who_we_followed_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of users InstaHappily followed to unfollow') -%}
+    {%- if part == 'description' -%}
+      <div>This is the maximum number of users previously followed by InstaHappily that can be unfollowed.</div>
+      {%- call render_example('3') -%}
+        <div>InstaHappily will unfollow only 3 users that were previously followed by.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_who_we_followed_track(fields) -%}
+  {%- set field = fields.get('unfollow_who_we_followed_track', none) -%}
+  {%- set possible_values = {
+    'all' : 'All (followers and non-followers)',
+    'nonfollowers' : 'Non-followers only',
+  } -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Users type to unfollow', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>"All" - unfollow all the users from the list</div>
+      <div>"Non-followers" - unfollow only users from the list who are not following you</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_who_we_followed_style(fields) -%}
+  {%- set field = fields.get('unfollow_who_we_followed_style', none) -%}
+  {{ setting_unfollow_style(field, label='Way to unfollow users followed by InstaHappily') }}
+{%- endmacro -%}
+
+{%- macro unfollow_who_we_followed_unfollow_after(fields) -%}
+  {%- set field = fields.get('unfollow_who_we_followed_unfollow_after', none) -%}
+  {{ setting_unfollow_after(field, label='Unfollow users InstaHappily followed after defined period of time',
+    description='To disable set to 0') }}
+{%- endmacro -%}
+
+{%- macro unfollow_who_we_followed_sleep_delay(fields) -%}
+  {%- set field = fields.get('unfollow_who_we_followed_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for unfollow users followed by InstaHappily') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user that InstaHappily unfollow, it will sleep for amount of seconds given here</div>
+      {%- call render_example('600') -%}
+        <div>After unfollowing few users InstaHappily will sleep for 600 seconds before continue with unfollowing other users.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro do_unfollow_non_followers(fields) -%}
+  {%- set field = fields.get('do_unfollow_non_followers', none) -%}
+  {%- call(part) settings_element_basic(field, label='Unfollow non followers') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will unfollow your non-followers, so users you are following but they are not following you</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_non_followers_amount(fields) -%}
+  {%- set field = fields.get('unfollow_non_followers_amount', none) -%}
+   {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of non-followers to unfollow') -%}
+    {%- if part == 'description' -%}
+      <div>This is the maximum number of users, who are following you back but you're following them, that can be unfollowed.</div>
+      {%- call render_example('3') -%}
+        <div>InstaHappily will unfollow only 3 users that you follow but they're not following you back.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_non_followers_style(fields) -%}
+  {%- set field = fields.get('unfollow_non_followers_style', none) -%}
+  {{ setting_unfollow_style(field, label='Way to unfollow non-followers') }}
+{%- endmacro -%}
+
+{%- macro unfollow_non_followers_unfollow_after(fields) -%}
+  {%- set field = fields.get('unfollow_non_followers_unfollow_after', none) -%}
+  {{ setting_unfollow_after(field, label='Unfollow non-followers after you follow them for',
+    description='To disable set to 0') }}
+{%- endmacro -%}
+
+{%- macro unfollow_non_followers_sleep_delay(fields) -%}
+  {%- set field = fields.get('unfollow_non_followers_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for unfollow non-followers') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user that InstaHappily unfollow, it will sleep for amount of seconds given here</div>
+      {%- call render_example('600') -%}
+        <div>After unfollowing few users InstaHappily will sleep for 600 seconds before continue with unfollowing other users.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro do_unfollow_all_following(fields) -%}
+  {%- set field = fields.get('do_unfollow_all_following', none) -%}
+  {%- call(part) settings_element_basic(field, label='Unfollow all following accounts') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will unfollow users you're following regardless if they're following you or not.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_all_following_amount(fields) -%}
+  {%- set field = fields.get('unfollow_all_following_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of users to unfollow from all followings') -%}
+    {%- if part == 'description' -%}
+      <div>Amount of the users to unfollow that you're following, regardles of, if they're following you or not</div>
+      {%- call render_example('3') -%}
+        <div>InstaHappily will unfollow only 3 users that you follow.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro unfollow_all_following_unfollow_after(fields) -%}
+  {%- set field = fields.get('unfollow_all_following_unfollow_after', none) -%}
+  {{ setting_unfollow_after(field, label='Unfollow users you follow only after defined time') }}
+{%- endmacro -%}
+
+{%- macro unfollow_all_following_style(fields) -%}
+  {%- set field = fields.get('unfollow_all_following_style', none) -%}
+  {{ setting_unfollow_style(field, label='Way to unfollow users you are following') }}
+{%- endmacro -%}
+
+{%- macro unfollow_all_following_sleep_delay(fields) -%}
+  {%- set field = fields.get('unfollow_all_following_sleep_delay', none) -%}
+  {%- call(part) settings_sleep_delay(field, label='Sleep delay for unfollow users you\'re following') -%}
+    {%- if part == 'description' -%}
+      <div>For every ~10 user that InstaHappily unfollow, it will sleep for amount of seconds given here</div>
+      {%- call render_example('600') -%}
+        <div>After unfollowing few users InstaHappily will sleep for 600 seconds before continue with unfollowing other users.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro dont_unfollow_my_active_users(fields) -%}
+  {%- set field = fields.get('dont_unfollow_my_active_users', none) -%}
+  {%- call(part) settings_element_basic(field, label='Do not unfollow your active users') -%}
+    {%- if part == 'description' -%}
+      <div>Set this to prevent InstaHappily to unfollow the users that you're following and who were active on your posts.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro dont_unfollow_my_active_users_post_amount(fields) -%}
+  {%- set field = fields.get('dont_unfollow_my_active_users_post_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of liked latest posts to be considered active user') -%}
+    {%- if part == 'description' -%}
+      <div>Active user is considered the user who has liked this amount of your latest posts</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will not unfollow the user you're following, if he has liked your 5 latest posts.</div>
+        <div>@InstaUserABC liked on 6 of your latest posts so he will still be followed by you.</div>
+        <div>@OtherInstaAccount liked only 3 of your latest posts so there's a chance InstaHappily will unfollow him.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{# Relationship #}
+
+{%- macro potency_ratio_followers_count(fields) -%}
+  {%- set field = fields.get('potency_ratio_followers_count', none) -%}
+  {%- call(part) settings_element_basic(field, visible="expert", label='FFR number of followers targeted user has') -%}
+    {%- if part == 'description' -%}
+      <div>FFR is shorthand for "followers-following ratio"</div>
+      <div>This is the number of followers that user should have, used for calculating user's followers-following ratio</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro potency_ratio_following_count(fields) -%}
+  {%- set field = fields.get('potency_ratio_following_count', none) -%}
+  {%- call(part) settings_element_basic(field, visible="expert", label='FFR number of accounts that user is following') -%}
+    {%- if part == 'description' -%}
+      <div>FFR is shorthand for "followers-following ratio"</div>
+      <div>This is the number of accounts that user should follow, used for calculating user's followers-following ratio</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro potency_ratio_positivness(fields) -%}
+  {%- set field = fields.get('potency_ratio_positivness', none) -%}
+  {%- set possible_values = {
+    "+": "Popular users",
+    "-": "Massive followers"
+  } -%}
+  {%- call(part) settings_element_basic(field, visible="expert", label='Targeted user type', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>FFR is shorthand for "followers-following ratio"</div>
+      <ul>
+        <li class="mt-3">
+          <div><b>Popular users</b></div>
+          <div>This option will enable actions on the popular users.</div>
+          <div>User is consider popular if his followers count is <b>higher</b> than amount of users he's following.</div>
+          <div>FFR will be calculated like this: followers count / following count</div>
+          {%- call render_example('Popular users')-%}
+            <div>InstaHappily will interact with popular users only.</div>
+            <div>FFR followers count is set to 5000</div>
+            <div>FFR following count is set to 4000.</div>
+            <div>FFR is 5000 / 4000 = 1.25.</div>
+            <div>When searching, InstaHappily finds the user who has 4000 followers and is following 4000 accounts.</div>
+            <div>InstaHappily will not make any interactions, because his FFR is 4000 / 4000 = 1 , which is below our desired FFR of 1.25.</div>
+            <div>For the user that has 10000 followers and is following 4000 accounts InstaHappily will make interactions, because his FFR is 10000 / 4000 = 2.5 , which is greater than our desired FFR of 1.25.</div>
+          {%- endcall -%}
+        </li>
+        <li class="mt-3">
+          <div><b>Massive followers</b></div>
+          <div>This option will enable actions on the massive followers.
+          <div>User is consider massive follower if his followers count is <b>lower</b> than amount of users he's following</div>
+          <div>FFR will be calculated like this: following count / followers count </div>
+          {%- call render_example('Massive followers')-%}
+            <div>InstaHappily will interact with massive followers users only.</div>
+            <div>FFR followers count is set to 4000</div>
+            <div>FFR following count is set to 5000.</div>
+            <div>FFR is 5000 / 4000 = 1.25.</div>
+            <div>When searching, InstaHappily finds the user who has 10000 followers and is following 4000 accounts.</div>
+            <div>InstaHappily will not make any interactions, because his FFR is 4000 / 10000 = 0.4 , which is below our desired FFR of 1.25.</div>
+            <div>For the user that has 4000 followers and is following 10000 accounts InstaHappily will make interactions, because his FFR is 10000 / 4000 = 2.5 , which is greater than our desired FFR of 1.25.</div>
+          {%- endcall -%}
+        </li>
+      </ul>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+{%- macro relationship_bounds_min_posts(fields) -%}
+  {%- set field = fields.get('relationship_bounds_min_posts', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Minimum number of posts targeted user must have',
+    description='Leave empty to disable this limit') -%}
+    {%- if part == 'description' -%}
+      <div>Set the minimum number of posts that user must have to make actions with that user</div>
+      <div>To disable it, leave it empty</div>
+      {%- call render_example('10') -%}
+        <div>Targeted user must have at least 10 posts or he will be skipped and InstaHappily won't do any actions on it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro relationship_bounds_max_posts(fields) -%}
+  {%- set field = fields.get('relationship_bounds_max_posts', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Maximum number of users posts targeted user must have',
+    description='Leave empty to disable this limit') -%}
+    {%- if part == 'description' -%}
+      <div>Set the maximum number of posts that user can have or he will be skipped and InstaHappily won't do any actions on it.</div>
+      <div>To disable it, leave it empty</div>
+      {%- call render_example('500') -%}
+        <div>Targeted user must not have more than 500 posts or he will be skipped and InstaHappily won't do any actions on it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro relationship_bounds_min_following(fields) -%}
+  {%- set field = fields.get('relationship_bounds_min_following', none) -%}
+  {%- call(part) settings_element_basic(field, label='Targeted user must follow at least this number of accounts',
+    description='Leave empty to disable this limit') -%}
+    {%- if part == 'description' -%}
+      <div>Set the minimum number of accounts that user should follow to make actions on that user.
+      Otherwise he will be skipped and InstaHappily won't do any actions on it.</div>
+      <div>To disable it, leave empty</div>
+      {%- call render_example('500') -%}
+        <div>Targeted user must follow at least 500 accounts or he will be skipped and InstaHappily won't do any actions on it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro relationship_bounds_min_followers(fields) -%}
+  {%- set field = fields.get('relationship_bounds_min_followers', none) -%}
+  {%- call(part) settings_element_basic(field, label='Targeted user must have least this number of followers',
+    description='Leave empty to disable this limit') -%}
+    {%- if part == 'description' -%}
+      <div>Set the minimum number of followers that user must have to make actions on that user.
+      Otherwise he will be skipped and InstaHappily won't do any actions on it.</div>
+      <div>To disable it, leave empty.</div>
+      {%- call render_example('500') -%}
+        <div>Targeted user must have at least 500 followers or he will be skipped and InstaHappily won't do any actions on it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro relationship_bounds_max_following(fields) -%}
+  {%- set field = fields.get('relationship_bounds_max_following', none) -%}
+  {%- call(part) settings_element_basic(field, label='Maximum number of accounts targeted user is following',
+    description='Leave empty to disable this limit') -%}
+    {%- if part == 'description' -%}
+      <div>Set the maximum number of accounts that user can follow to make actions on that user.
+      Otherwise he will be skipped and InstaHappily won't do any actions on it.</div>
+      <div>To disable it, leave empty</div>
+      {%- call render_example('5000') -%}
+        <div>Targeted user must not follow more than 5000 accounts or he will be skipped and InstaHappily won't do any actions on it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro relationship_bounds_max_followers(fields) -%}
+  {%- set field = fields.get('relationship_bounds_max_followers', none) -%}
+  {%- call(part) settings_element_basic(field, label='Maximum number of followers targeted user can have',
+    description='Leave empty to disable this check') -%}
+    {%- if part == 'description' -%}
+      <div>Set the maximum number of followers that user can have to make actions on that user.
+      Otherwise he will be skipped and InstaHappily won't do any actions on it.</div>
+      <div>To disable it, leave empty</div>
+      {%- call render_example('50000') -%}
+        <div>Targeted user must not have more than 50000 followers or he will be skipped and InstaHappily won't do any actions on it.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{# Comments #}
+{%- macro do_commenting(fields) -%}
+  {%- set field = fields.get('do_commenting', none) -%}
+  {%- call(part) settings_element_basic(field, label='Enable commenting') -%}
+    {%- if part == 'description' -%}
+      <div>Enable or disable making comments on the posts.</div>
+      <div>Comment will be made only if the post was previously liked.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro commenting_percentage(fields) -%}
+  {%- set field = fields.get('commenting_percentage', none) -%}
+  {%- call(part) settings_element_basic(field,
+    visible='expert',
+    label='Comment on every N-th post',
+    description='Set to 1 to comment on every post'
+  ) -%}
+    {%- if part == 'description' -%}
+      <div>
+        Comment on every Nth post.
+        {%- call render_example('4') -%}
+          <div>Every 4th post that was liked will also be commented on.</div>
+        {%- endcall -%}
+      </div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro delimit_commenting(fields) -%}
+  {%- set field = fields.get('delimit_commenting', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Comment on post only if it has certain amount of existing comments') -%}
+    {%- if part == 'description' -%}
+      <div>If turned on, InstaHappily will comment on the post only if the post has certain amount of existing comments.</div>
+      <div>Comments amount ranges can be configured in settings min and max.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro delimit_commenting_min(fields) -%}
+  {%- set field = fields.get('delimit_commenting_min', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Minimum amount of existing comments on post') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will commented on post only if there is at least N of existing comments, amount set here.</div>
+      <div>Valid only if setting "Comment on posts only if it has certain amount of existing comments" is enabled</div>
+      <div>To disable this option set it to 0</div>
+      {%- call render_example('5') -%}
+        <div>If post has at least 5 comments InstaHappily will comment on the post.</div>
+        <div>If post has 4 comments InstaHappily won't comment on that post.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro delimit_commenting_max(fields) -%}
+  {%- set field = fields.get('delimit_commenting_max', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Maximum amount of existing comments on post') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will be comment on post only if there is maximum of N existing comments, amount set here</div>
+      <div>Valid only if setting "Comment on posts only if it has certain amount of existing comments" is enabled</div>
+      <div>To disable only this option set it to 0</div>
+      {%- call render_example('5') -%}
+        <div>If post has 5 existing comments or less InstaHappily will comment on the post.</div>
+        <div>If post has 6 comments InstaHappily won't comment on that post.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro delimit_commenting_mandatory_words(fields) -%}
+  {%- set field = fields.get('delimit_commenting_mandatory_words', none) -%}
+  {%- set custom_list_field = fields.get('delimit_commenting_mandatory_words_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='comments',
+    visible='advanced', label='Comment if mandatory words given here are present', icon='comment') -%}
+    {%- if part == 'description' -%}
+      <div>This is a list of words that InstaHappily will take and try to find them in the post description or post's first comment.</div>
+      <div>InstaHappily will comment on that post only if, at least one word given here is found in that post first comment or in the post description.</div>
+      <div>If post doesn't have any comments than InstaHappily will search only in the description.</div>
+      <div>If none of the words are found InstaHappily won't comment on that post.</div>
+      {%- call render_example('awesome, incredible')-%}
+        <div>InstaHappily will comment on a post only if word "awesome" or "incredible" could be found in post
+        description or it's first comment.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro comment_by_locations_list(fields) -%}
+  {%- set field = fields.get('comment_by_locations_list', none) -%}
+  {%- set custom_list_field = fields.get('comment_by_locations_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='locations',
+    label='Comment on posts based on locations', icon='map-marker-alt') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will comment on posts that are based on these locations.</div>
+      <div>Locations are processed one by one in a top-down style.</div>
+      <ul>Locations can be found by:
+        <li>Navigating through <b><a href="https://www.instagram.com/explore/locations/" target="_blank">https://www.instagram.com/explore/locations/</a></b></li>
+        <li>Instagram search</li>
+      </ul>
+      <div>If the location url is: </b>https://www.instagram.com/explore/locations/221379350/the-north-pole/</b></div>
+      <div>Use everything till the end (or just the number) after <b>https://www.instagram.com/explore/locations/</b></div>
+      <div>to get final and correct location: <b>221379350/the-north-pole/</b></div>
+      {%- call render_example('c815012/richmond-united-kingdom/')-%}
+        <div>InstaHappily will comment on posts which tagged Richmond, United Kingdom.</div>
+      {%- endcall -%}
+      {%- call render_example('256266910')-%}
+        <div>InstaHappily will comment on posts which tagged London City, United Kingdom.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro comment_by_locations_amount(fields) -%}
+  {%- set field = fields.get('comment_by_locations_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Maximum amount of posts to comment on per location') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will comment on maximum of N posts per location. Amount set here.</div>
+      <div>Valid only if setting "Comment on posts based on locations" has at least one location.</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will comment on 5 posts per location and no more.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro comments_general_all_media(fields) -%}
+  {%- set field = fields.get('comments_general_all_media', none) -%}
+  {%- set custom_list_field = fields.get('comments_general_all_media_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='comments',
+    label='Comments list', icon='comment', emojiable=true) -%}
+    {%- if part == 'description' -%}
+      <div>List of the comments that will be used to make comments on regular posts (photo and video).</div>
+      {%- call render_example('Awesome, I like it!')-%}
+        InstaHappily will make comment "Awesome, I like it!".
+      {%- endcall -%}
+      <div class="mt-3"><b>Special:</b> If you want to add the username of the poster to the comment include this in the comment <b>@{}</b> </div>
+      {%- call render_example('Excellent! @{}') -%}
+        <div>If the poster username is @ILoveToPost, then the comment that will be left on the post is "Excellent! @ILoveToPost"</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+{%- macro comments_general_photo(fields) -%}
+  {%- set field = fields.get('comments_general_photo', none) -%}
+  {%- set custom_list_field = fields.get('comments_general_photo_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='comments',
+    visible='advanced', label='Comments list for photos only', icon='comment', emojiable=true) -%}
+    {%- if part == 'description' -%}
+      <div>List of the comments that will be used for <b>photo</b> posts only.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+{%- macro comments_general_video(fields) -%}
+  {%- set field = fields.get('comments_general_video', none) -%}
+  {%- set custom_list_field = fields.get('comments_general_video_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='comments',
+    visible='advanced', label='Comments list for videos only', icon='comment', emojiable=true) -%}
+    {%- if part == 'description' -%}
+      <div>List of the comments that will be used for <b>video</b> posts only.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{# Interact #}
+{%- macro user_interact_number_of_posts(fields) -%}
+  {%- set field = fields.get('user_interact_number_of_posts', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Amount of posts per user on which additional actions will be made') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will interact with maximum of N users posts.</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will interact with 5 users posts only.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro user_interact_percentage(fields) -%}
+  {%- set field = fields.get('user_interact_percentage', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Interact with every N-th user',
+    description='Set to 1 to interact with every user') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will interact with every N-th user, instead of every user.</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will interact with every 5-th user.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro user_interact_randomize(fields) -%}
+  {%- set field = fields.get('user_interact_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Randomly interact with users') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will randomly pick users to make interaction actions with them</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_list(fields) -%}
+  {%- set field = fields.get('interact_by_users_list', none) -%}
+  {%- set custom_list_field = fields.get('interact_by_users_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Interact with these users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will interact with each user from this list.</div>
+      <div>Likes, comments and follow settings are applicable so</div>
+      <div>either one or all of likes, comments and follow should be enabled in the session for this to work.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_amount(fields) -%}
+  {%- set field = fields.get('interact_by_users_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Limit actions amount per interaction') -%}
+    {%- if part == 'description' -%}
+      <div>Actions are likes, comments, follows</div>
+      <div>This will limit InstaHappily when interacting with users from list "Interact with these users" for each action.</div>
+      {%- call render_example('5') -%}
+        <div>If likes are enabled it will be possible to like 5 posts only.</div>
+        <div>If comments are enabled, maximum 5 comments will be made.</div>
+        <div>If follows are enabled, only 5 accounts will be followed.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_randomize(fields) -%}
+  {%- set field = fields.get('interact_by_users_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Interact by users list randomly') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will randomly go through the given list of users set for interaction.</div>
+      <div>Otherwise they will be interacted in the order they were added to the list</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_tagged_posts_list(fields) -%}
+  {%- set field = fields.get('interact_by_users_tagged_posts_list', none) -%}
+  {%- set custom_list_field = fields.get('interact_by_users_tagged_posts_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Interact by posts tagged with these users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>Interact with users who posted post and tagged user/users from this list</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>@OtherInstaAccount posted a post and tagged user @InstaUserABC.</div>
+        <div>InstaHappily will then like that post, comment on it and/or follow @OtherInstaAccount.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_tagged_posts_amount(fields) -%}
+  {%- set field = fields.get('interact_by_users_tagged_posts_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Limit actions amount per interaction') -%}
+    {%- if part == 'description' -%}
+      <div>This will limit the number of actions on interaction per post tagged with user from the list "Interact by posts tagged with these users"</div>
+      {%- call render_example('5') -%}
+        <div>If likes are enabled it will be possible to like 5 posts only.</div>
+        <div>If comments are enabled, maximum 5 comments will be made.</div>
+        <div>If follows are enabled, only 5 accounts will be followed.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_tagged_posts_randomize(fields) -%}
+  {%- set field = fields.get('interact_by_users_tagged_posts_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Randomly interact on posts tagged with users from list') -%}
+    {%- if part == 'description' -%}
+      <div>Interact randomly with posts found based on list "Interact by posts tagged with these users"</div>
+      <div>Otherwise it will interact in top-down fashion.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_following_list(fields) -%}
+  {%- set field = fields.get('interact_by_users_following_list', none) -%}
+  {%- set custom_list_field = fields.get('interact_by_users_following_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Interact with accounts that users from this list are following', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>Interact with the users that are followed by the users from this list</div>
+      <div>Likes, comments and follow settings are applicable</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>@InstaUserABC is following account @OtherInstaAccount.</div>
+        <div>InstaHappily will interact with account @OtherInstaAccount.</div>
+        <div>Then InstaHappily will like @OtherInstaAccount posts, comment on them and/or follow the @OtherInstaAccount.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_following_amount(fields) -%}
+  {%- set field = fields.get('interact_by_users_following_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Limit actions amount per interaction') -%}
+    {%- if part == 'description' -%}
+      <div>This will limit the number of actions per interaction with user followed by user from the list</div>
+      {%- call render_example('5') -%}
+        <div>If likes are enabled it will be possible to like only 5 posts per followed account.</div>
+        <div>If comments are enabled, maximum 5 comments per followed account will be made.</div>
+        <div>If follows are enabled, only 5 accounts will be followed.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_users_following_randomize(fields) -%}
+  {%- set field = fields.get('interact_by_users_following_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Interact randomly with the accounts followed by users') -%}
+    {%- if part == 'description' -%}
+      <div>If disabled InstaHappily will just go with whichever account comes first.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_user_followers_list(fields) -%}
+  {%- set field = fields.get('interact_by_user_followers_list', none) -%}
+  {%- set custom_list_field = fields.get('interact_by_user_followers_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Interact with followers of users from this list', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will interact with the followers of users from this list.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>@OtherInstaAccount is following account @InstaUserABC.</div>
+        <div>InstaHappily will interact with account @OtherInstaAccount.</div>
+        <div>InstaHappily will like, comment on and/or follow the @OtherInstaAccount posts.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_user_followers_amount(fields) -%}
+  {%- set field = fields.get('interact_by_user_followers_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Limit actions amount per interaction') -%}
+    {%- if part == 'description' -%}
+      <div>This will limit the number of actions per interaction with followers of users from the list "Interact with followers of users from this list"</div>
+      {%- call render_example('5') -%}
+        <div>If likes are enabled it will be possible to like only 5 posts per follower.</div>
+        <div>If comments are enabled, maximum 5 comments per follower will be made.</div>
+        <div>If follows are enabled, only 5 accounts will be followed.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_user_followers_randomize(fields) -%}
+  {%- set field = fields.get('interact_by_user_followers_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Interact randomly with followers of user accounts') -%}
+    {%- if part == 'description' -%}
+      <div>Interact randomly with followers or users found on list "Interact with followers of users from this list"</div>
+      <div>If disabled, InstaHappily will just go with whichever account comes first.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_on_posts_at_url_list(fields) -%}
+  {%- set field = fields.get('interact_on_posts_at_url_list', none) -%}
+  {%- set custom_list_field = fields.get('interact_on_posts_at_url_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='links',
+    label='Interact on posts at these links', icon='link') -%}
+    {%- if part == 'description' -%}
+      <div>Do the actions on the links provided in this list (like, comment, follow available if enabled)</div>
+      <div>Possible links (URL) formats:</div>
+      <ul>
+        <li><b>full:</b> https://www.IG.com/p/Aj0J4bJDY7r/?taken-at=128316221</li>
+        <li><b>post link:</b> https://www.IG.com/p/Aj0J4bJDY7r/</li>
+        <li><b>post handle:</b> Aj0J4bJDY7r/?taken-at=128316221</li>
+        <li><b>post ID:</b> Aj0J4bJDY7r</li>
+      </ul>
+      {%- call render_example('Fv0J4AJ3Y7r/?taken-at=628416252') -%}
+        <div>Post handle</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_on_posts_at_url_interact_owner(fields) -%}
+  {%- set field = fields.get('interact_on_posts_at_url_interact_owner', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions with owners of posts at given links') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actions with owners of posts from the given links (URLs)
+      from the list "Interact on posts at these links"</div>
+      <div>Likes, comments and follow settings are applicable</div>
+      <div>If disabled, InstaHappily will interact just with the post on the given link, but not with the owner of the post.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_on_posts_at_url_randomize(fields) -%}
+  {%- set field = fields.get('interact_on_posts_at_url_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Interact randomly with links') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will interact with randomly pick links from the list "Interact on posts at these links"</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_comments_users_list(fields) -%}
+  {%- set field = fields.get('interact_by_comments_users_list', none) -%}
+  {%- set custom_list_field = fields.get('interact_by_comments_users_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='usernames',
+    label='Interact with comments on these users posts', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will interact with comments that are left on posts of the users from this list</div>
+      <div>Interaction that will be made is actually to like a comment.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>@InstaUserABC has made a post and @OtherInstaAccount commented on that post.</div>
+        <div>InstaHappily will like a comment that @OtherInstaAccount left on that post.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_comments_posts_amount(fields) -%}
+  {%- set field = fields.get('interact_by_comments_posts_amount', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of posts per each user') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will take N amount of posts, set here,
+      from each user from the list "Interact with comments on these users posts", and interact with posts comments.</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will take 5 posts per each user to interact with posts comments.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_comments_comments_per_post(fields) -%}
+  {%- set field = fields.get('interact_by_comments_comments_per_post', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Amount of comments per users post') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will take N amount of comments, set here,
+      from each post from users from the list "Interact with comments on these users posts", and interact with those comments.</div>
+      {%- call render_example('5') -%}
+        <div>InstaHappily will take 5 posts per each post to interact with posts comments.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_comments_interact_commenters(fields) -%}
+  {%- set field = fields.get('interact_by_comments_interact_commenters', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions with commenters on users post') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actionsswith commenters on posts of users
+      from the list "Interact with comments on these users posts"</div>
+      <div>Likes, comments and follow settings are applicable</div>
+      <div>If disabled, InstaHappily will interact just with the post comment, but not with the owner of the comment.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_by_comments_randomize(fields) -%}
+  {%- set field = fields.get('interact_by_comments_randomize', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Randomly go through the posts and comments') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will randomly interact with comments and posts from the users from the list "Interact with comments on these users posts"</div>
+      <div>If disabled, InstaHappily will go through the comments on the first come first served basis.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_tags_interact(fields) -%}
+  {%- set field = fields.get('like_by_tags_interact', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions with owners of liked posts') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actions with the owners of liked posts, when going through the list "Like posts by these hashtags".</div>
+      <div>Likes, comments and follow actions are applicable if enabled.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily just liked @InstaUserABC post because it had one of the hashtags from the list.</div>
+        <div>It will interact with account @InstaUserABC:</div>
+        <div>like, comment on his posts and/or follow the account if those actions are enabled.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro like_by_feed_interact(fields) -%}
+  {%- set field = fields.get('like_by_feed_interact', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions with owners of liked posts from your feed') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actions with users whose posts, were liked, from your feed.</div>
+      <div>Likes, comments and follow actions are applicable if enabled.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily just liked @InstaUserABC post because it appeared on your feed.</div>
+        <div>It will interact with account @InstaUserABC:</div>
+        <div>like, comment on his posts and/or follow the account if those actions are enabled.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follow_by_username_list_interact(fields) -%}
+  {%- set field = fields.get('follow_by_username_list_interact', none) -%}
+  {%- call(part) settings_element_basic(field, label='Interact with "Follow users from this list"') -%}
+    {%- if part == 'description' -%}
+      <div>Interact with each followed user by the list of "Follow users from this list"</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_on_follow_user_followers(fields) -%}
+  {%- set field = fields.get('interact_on_follow_user_followers', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions on accounts that were followed') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actions with each followed user by the list of "Follow the followers of the users from this list"</div>
+      <div>Likes, comments and follow actions are applicable if enabled.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily just followed @InstaUserABC because it was following one of the users from the given list.</div>
+        <div>It will interact with account @InstaUserABC:</div>
+        <div>like, comment on his posts and/or follow the account if those actions are enabled.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_on_follow_user_following(fields) -%}
+  {%- set field = fields.get('interact_on_follow_user_following', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions on accounts that were followed') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actions with each followed user by the list of "Follow users who are followed by these users"</div>
+      <div>Likes, comments and follow actions are applicable if enabled.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily just followed @InstaUserABC because that user is followed by one of the users from the given list.</div>
+        <div>It will interact with account @InstaUserABC:</div>
+        <div>like, comment on his posts and/or follow the account if those actions are enabled.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_on_follow_likers(fields) -%}
+  {%- set field = fields.get('interact_on_follow_likers', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions on accounts that were followed') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actions with each followed user by the list of "Follow accounts who liked posts from these users"</div>
+      <div>Likes, comments and follow actions are applicable if enabled.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily just followed @InstaUserABC because he liked one of the posts from at least one of the users from the given list.</div>
+        <div>It will interact with account @InstaUserABC:</div>
+        <div>like, comment on his posts and/or follow the account if those actions are enabled.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro interact_on_follow_commenters(fields) -%}
+  {%- set field = fields.get('interact_on_follow_commenters', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Make additional actions on accounts that were followed') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will make additional actions with each followed user by the list of "Follow users that commented on posts from these users"</div>
+      <div>Likes, comments and follow actions are applicable if enabled.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily just followed @InstaUserABC because that user commented on one of the posts from users from the given list.</div>
+        <div>It will interact with account @InstaUserABC:</div>
+        <div>like, comment on his posts and/or follow the account if those actions are enabled.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+{# Other #}
+
+{%- macro do_like_by_smart_hashtags(fields) -%}
+  {%- set field = fields.get('do_like_by_smart_hashtags', none) -%}
+  {%- call(part) settings_element_basic(field, label='Like by dynamically generated hashtags') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will like by dynamically generated hashtags.</div>
+      <div>InstaHappily will skip and avoid hashtags that you put on the list of "Skip and avoid these hashtags"</div>
+      <div>For this to work, at least one hashtag needs to be provided on the list "List of hashtags to dinamically generate hashtags from".</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro do_follow_by_smart_hashtags(fields) -%}
+  {%- set field = fields.get('do_follow_by_smart_hashtags', none) -%}
+  {%- call(part) settings_element_basic(field, label='Follow by dynamically generated hashtags') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will follow users whose posts have one hashtag from a list of dynamically generated hashtags.</div>
+      <div>InstaHappily will skip and avoid hashtags that you put on the list of "Skip and avoid these hashtags"</div>
+      <div>For this to work, at least one hashtag needs to be provided on the list "List of hashtags to dinamically generate hashtags from".</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro smart_hashtags_limit(fields) -%}
+  {%- set field = fields.get('smart_hashtags_limit', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Limit number of dinamically generated thashtags') -%}
+    {%- if part == 'description' -%}
+      <div>Set the limit on the amount of dinamically generated hashtags.</div>
+      {%- call render_example('20') -%}
+        <div>Only 20 new hashtags will be generated and used.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro smart_hashtags_sort(fields) -%}
+  {%- set field = fields.get('smart_hashtags_sort', none) -%}
+  {%- set possible_values = {
+    'random' : 'Random',
+    'top' : 'Top'
+  } -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Way to go through smarthashtags', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <ul>
+        <li>Random - go randomly through the list of dinamically generated hashtags</li>
+        <li>Top - go from top to bottom through the list of dinamically generated hashtags</li>
+      </ul>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro smart_hashtags_list(fields) -%}
+  {%- set field = fields.get('smart_hashtags_list', none) -%}
+  {%- set custom_list_field = fields.get('smart_hashtags_custom_list', none) -%}
+  {%- call(part) setting_list_with_custom_list_picker(field=field, custom_list_field=custom_list_field, custom_list_type_key='hashtags',
+    label='List of hashtags to dinamically generate hashtags from', icon='hashtag') -%}
+    {%- if part == 'description' -%}
+      <div>This is a list of hashtags which is acting like a base to create a list of new hashtags</div>
+      <div>New hashtags will be generated from each of the smart hashtags provided here, based on the rankings from the site DisplayPurposes</div>
+      <div>Try DisplayPurposes generator by yourself before putting hashtags on this list.
+       <a href="https://displaypurposes.com/" target="_blank">https://displaypurposes.com/</a></div>
+      {%- call render_example('insta') -%}
+        <div>For smarthashtag #insta DisplayPurposes generator will return: </div>
+        <div>#insta #instaphoto #instago #instasize #instacool</div>
+        <div>That list is build dinamically and can change according to the rankings of hashtags on the generator</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro run_forever(fields) -%}
+  {%- set field = fields.get('run_forever', none) -%}
+  {%- call(part) settings_element_basic(field, label='Run session forever (24/7)') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will run this session forever (24/7), until manually stopped.</div>
+      <div>On the restart of the machine or the app itself, InstaHappily will pick up sessions that are flagged to run forever
+      and it will restart them automatically.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_first_top_posts(fields) -%}
+  {%- set field = fields.get('skip_first_top_posts', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Skip first top posts, when searching for posts') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will skip first top posts, when searching for posts.</div>
+      <div>Used by options "Like by tags list", "Follow by tags list"</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_private(fields) -%}
+  {%- set field = fields.get('skip_private', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Skip private accounts') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will skip private accounts totally. No actions or interactions will be done with private accounts.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_private_percentage(fields) -%}
+  {%- set field = fields.get('skip_private_percentage', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Skip every N-th private account',
+    description='Set to 1 to skip all') -%}
+    {%- if part == 'description' -%}
+      <div>Skip every N-th private account</div>
+      <div>Defaults to 1 which means InstaHappily will skip all private accounts</div>
+      {%- call render_example('5') -%}
+        <div>Every action on 5th private user will be skipped.</div>
+        <div>If InstaHappily like 4 posts from private users then it will skip the next post if it comes from private user.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_no_profile_pic(fields) -%}
+  {%- set field = fields.get('skip_no_profile_pic', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Skip users without profile picture') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will skip users without profile picture and no actions or interactions will be done on them.
+      Usually those accounts are not real users.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_no_profile_pic_percentage(fields) -%}
+  {%- set field = fields.get('skip_no_profile_pic_percentage', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert',
+    label='Skip every N-th account without profile picture',
+    description='Set to 1 to skip all') -%}
+    {%- if part == 'description' -%}
+      <div>Skip every N-th account without profile picture.</div>
+      <div>Defaults to 1 which means InstaHappily will skip all users without profile picture.</div>
+      {%- call render_example('5') -%}
+        <div>Every action on 5th user that has not profile picture will be skipped.</div>
+        <div>If InstaHappily like 4 posts from users without profile pics, then it will skip the next post if it comes from user without profile picture.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_business(fields) -%}
+  {%- set field = fields.get('skip_business', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Skip business accounts') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will skip every account that has business account activated. No actions or interactions will be made
+      with those accounts.</div>
+      <div>Works only if setting "Skip business categories" or "Dont skip business categories" are set.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_business_percentage(fields) -%}
+  {%- set field = fields.get('skip_business_percentage', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert',
+          label='Skip every N-th business account',
+          description='Set to 1 to skip all') -%}
+    {%- if part == 'description' -%}
+      <div>Skip every N-th business account.</div>
+      <div>Defaults to 1 which means InstaHappily will skip all users that have business accounts.</div>
+      {%- call render_example('5') -%}
+        <div>Every action on 5th business account will be skipped.</div>
+        <div>If InstaHappily like 4 posts from business users than it will skip the next post that meets criteria if it comes from business user.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro skip_business_categories(fields) -%}
+  {%- set field = fields.get('skip_business_categories', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Skip business categories registered under these categories', possible_values=business_categories_possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily wil skip users that have business accounts registered under these categories.</div>
+      <div>Taken into consideration only if setting "Skip business accounts" is enabled.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro dont_skip_business_categories(fields) -%}
+  {%- set field = fields.get('dont_skip_business_categories', none) -%}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Do not skip business accounts registered under these categories', possible_values=business_categories_possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will not skip business accounts registered under these categories.</div>
+      <div>Taken into consideration only if setting "Skip business accounts" is enabled.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{# Quota supervisor #}
+
+{%- macro do_quota_supervise(fields) -%}
+  {%- set field = fields.get('do_quota_supervise', none) -%}
+  {%- call(part) settings_element_basic(field, label='Enable actions limiting') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will limit the number of actions such as likes, comments, follows and unfollows for this profile.</div>
+      <div>It is possible to limit actions per hour or per day.</div>
+      <div>By default, if action limit is reached, action will just be skipped while InstaHappily continue doing other
+      actions that didn't reach their limits</div>
+      <div>Other option is, if action limit is reached, InstaHappily profile session will go to sleep for some time and in that time no other actions will be made.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_likes_hourly(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_likes_hourly', none) -%}
+  {%- call(part) settings_element_basic(field, label='Limit likes per hour',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of new likes that InstaHappily can do in one hour.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('150') -%}
+        <div>After doing 150 likes InstaHappily will stop liking for some time before it starts again.</div>
+        <div>InstaHappily started liking at 12.30, and at 13.00 it made 150 likes.</div>
+        <div>InstaHappily will then wait until 13.30 before starts with liking posts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_likes_daily(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_likes_daily', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Limit likes per day',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of new likes that InstaHappily can do in one day.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('2000') -%}
+        <div>After doing 2000 likes InstaHappily will stop liking for some time before it starts again.</div>
+        <div>InstaHappily started liking at 08.30, at 22.00 it made 2000 likes.</div>
+        <div>InstaHappily will wait until 08.30 tomorrow before it starts with liking posts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_comments_hourly(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_comments_hourly', none) -%}
+  {%- call(part) settings_element_basic(field, label='Limit comments per hour',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of new comments that InstaHappily can do in one hour.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('150') -%}
+        <div>After making 150 comments InstaHappily will stop commenting for some time before it starts again.</div>
+        <div>InstaHappily started commenting at 12.30, at 13.00 it made 150 comments.</div>
+        <div>InstaHappily will wait until 13.30 before it starts with commenting on posts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_comments_daily(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_comments_daily', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Limit comments per day',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of new comments that InstaHappily can do in one day.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('1500') -%}
+        <div>After making 1500 comments InstaHappily will stop commenting for some time before it starts again.</div>
+        <div>InstaHappily started commenting at 08.30, at 22.00 it made 1500 comments.</div>
+        <div>InstaHappily will wait until 08.30 tomorrow before it starts with commenting on posts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_follows_hourly(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_follows_hourly', none) -%}
+  {%- call(part) settings_element_basic(field, label='Limit following per hour',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of people InstaHappily will follow in one hour.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('150') -%}
+        <div>After making 150 follows InstaHappily will stop following for some time before it starts again.</div>
+        <div>InstaHappily started following at 12.30, at 13.00 it followed 150 accounts.</div>
+        <div>InstaHappily will wait until 13.30 before it starts with following other accounts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_follows_daily(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_follows_daily', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Limit following per day',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of people InstaHappily will follow in one day.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('1500') -%}
+        <div>After making 1500 follows InstaHappily will stop following for some time before it starts again.</div>
+        <div>InstaHappily started following at 08.30, at 22.00 it made 1500 follows.</div>
+        <div>InstaHappily will wait until 08.30 tomorrow before it starts with following other accounts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_unfollows_hourly(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_unfollows_hourly', none) -%}
+  {%- call(part) settings_element_basic(field, label='Limit unfollowing per hour',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of people to unfollow that InstaHappily can do in one hour.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('150') -%}
+        <div>After making 150 unfollows InstaHappily will stop unfollowing for some time before it starts again.</div>
+        <div>InstaHappily started unfollowing at 12.30, at 13.00 it did 150 unfollows.</div>
+        <div>InstaHappily will wait until 13.30 before it starts unfollowing accounts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_peak_unfollows_daily(fields) -%}
+  {%- set field = fields.get('quota_supervisor_peak_unfollows_daily', none) -%}
+  {%- call(part) settings_element_basic(field, visible="advanced", label='Limit unfollowing per day',
+    description='To disable leave empty') -%}
+    {%- if part == 'description' -%}
+      <div>Maximum number of people to unfollow that InstaHappily can do in one day.</div>
+      <div>To disable only this limit, leave this field empty.</div>
+      {%- call render_example('1500') -%}
+        <div>After making 1500 unfollows InstaHappily will stop unfollowing for some time before it starts again.</div>
+        <div>InstaHappily started unfollowing at 08.30, at 22.00 it did 1500 unfollows.</div>
+        <div>InstaHappily will wait until 08.30 tomorrow before it starts with unfollowing accounts again.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_sleep_after_list(fields) -%}
+  {%- set field = fields.get('quota_supervisor_sleep_after_list', none) -%}
+  {% set possible_values = {
+    "likes": "Likes",
+    "likes_d": "Likes daily",
+    "likes_h": "Likes hourly",
+    "comments": "Comments",
+    "comments_d": "Comments daily",
+    "comments_h": "Comments hourly",
+    "follows": "Follows",
+    "follows_d": "Follows daily",
+    "follows_h": "Follows hourly",
+    "unfollows": "Unfollows",
+    "unfollows_d": "Unfollows daily",
+    "unfollows_h": "Unfollows hourly"
+  } %}
+  {%- call(part) settings_element_basic(field, label='On which actions should InstaHappily sleep, after action reaches it\'s limits', possible_values=possible_values, visible='advanced') -%}
+    {%- if part == 'description' -%}
+      <div>Instead of skipping over the action when it reaches the limit it is also possible for session to sleep for some time.</div>
+      <div>This can be used to avoid bans, by putting the entire session to sleep instead of just continuing with actions that didn't reach their limits.</div>
+      <div>You can choose to sleep upon reaching limit (daily or hourly whichever comes first) by adding to this list.</div>
+      <div>Or you can set the session to sleep only after particular limit is reached, e.g daily likes limit.</div>
+      <div>Note: If you choose "Likes" that means "Likes daily" and "Likes hourly" is included so no need to chose them as well.
+        Same applies to other options.</div>
+      {%- call render_example('Follows hourly') -%}
+        <div>Session will sleep only upon reaching new follows hourly limit. If this is the only item in the list
+        session will not sleep for any other limit as those actions will just be skipped.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_sleepyhead(fields) -%}
+  {%- set field = fields.get('quota_supervisor_sleepyhead', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Be more humanlike when waking up after sleep') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will be more like humans waking up after sleep, which means that the session will wake up a bit later in a randomly chosen interval
+      around wake up time.</div>
+      <div>This is in use only if InstaHappily sleeps after actions reaches their limits, if it's skipping the actions then no sleep is in progress meaning no wake up time is needed.</div>
+      {%- call render_example('Enabled') -%}
+        <div>If remaining time to sleep is 20 minutes, InstaHappily will actually sleep a bit more, for e.g 24 minutes.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro quota_supervisor_stochastic_flow(fields) -%}
+  {%- set field = fields.get('quota_supervisor_stochastic_flow', none) -%}
+  {%- call(part) settings_element_basic(field, visible='expert', label='Generate limits from your defined limits') -%}
+    {%- if part == 'description' -%}
+      <div>If enabled, InstaHappily will generate smoother limits which will be lower than your given limits. This is used just to be more random in doing actions.</div>
+      <div>Enabling this helps you avoid bans.</div>
+      {%- call render_example('Enabled') -%}
+        <div>You set likes hourly limit to 50.</div>
+        <div>For the first hour it will be 50 but for any other hour it will change a bit, next hour it will be 40, next 49, next 42, etc.</div>
+        <div>to increase the randomness in doing actions.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{# ############################################################################### #}
+{# Currently not showing these #}
+{# ############################################################################### #}
+
+{%- macro use_clarifai(fields) -%}
+  {%- set field = fields.get('use_clarifai', none) -%}
+  {%- call(part) settings_element_basic(field, label='Use Clarifai') -%}
+    {%- if part == 'description' -%}
+    <div>
+    Use Clarifai
+    </div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro clarifai_api_key(fields) -%}
+  {%- set field = fields.get('clarifai_api_key', none) -%}
+  {%- call(part) settings_element_basic(field, label='Clarifai API key') -%}
+    {%- if part == 'description' -%}
+    <div>
+    Clarifai API key
+    </div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+{# ############################################################################### #}
+{# App Settings #}
+{# ############################################################################### #}
+{%- macro settings_view_level(fields) -%}
+  {%- set field = fields.get('settings_view_level', none) -%}
+  {%- set field = make_field_required(field)-%}
+  {%- set possible_values = {
+    'simple' : 'Simple',
+    'advanced' : 'Advanced',
+    'expert' : 'Expert'
+  } -%}
+  {%- call(part) settings_element_basic(field, label='Session settings mode', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>Each mode will show more advanced settings than previous one.</div>
+      <ul> Three different modes of complexity are available:
+        <li><b>Simple</b> - only mandatory settings will be visible. Most settings are in this category.</li>
+        <li><b>Advanced</b> - settings that are not mandatory and InstaHappily can work just fine if you don't set them. They can
+        be used if you want to fine tune the session</li>
+        <li><b>Expert</b> - settings that are considered for expert users and can be very specific. When using those settings you should always read
+        what that setting is changing.</li>
+      </ul>
+      <div>This affects session settings mode throughout the entire app.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro serial_key(fields) -%}
+  {%- set field = fields.get('serial_key_hash', none) -%}
+  {%- call(part) settings_element_basic(field, label='Serial Key') -%}
+    {%- if part == 'description' -%}
+      <div>Your serial key.</div>
+      <div>Provide serial key to be able to receive updates automatically.</div>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+
+
+{# ############################################################################### #}
+{# Proxy settings #}
+{# ############################################################################### #}
+{%- macro proxy_picker(fields) -%}
+  {%- set field = fields.get('proxy_id', none) -%}
+  {%- set possible_values = get_all_proxies_as_possible_values() -%}
+  {%- call(part) settings_element_basic(field, label='Connection proxy', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>Pick a proxy to use for entire traffic for this profile.</div>
+      <div>Leave empty to use your internet connection directly, without connecting through proxy.</div>
+      {%- call render_example('Proxy1') -%}
+        Entire profile traffic will go through Proxy1.
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+  {%- if possible_values|length == 0 -%}
+    <div class="alert alert-warning m-2" role="alert">
+      No proxies available. Add a proxy here
+      <a class="" href="/add-proxy">
+        <button type="button" class="btn btn-dark btn-sm">Add Proxy</button>
+      </a>
+    </div>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro proxy_name(fields) -%}
+  {%- set field = fields.get('name', none) -%}
+  {%- call(part) settings_element_basic(field, label='Name') -%}
+    {%- if part == 'description' -%}
+      <div>Enter proxy name (whichever name you like). This is not used for connection, only for a display purposes in InstaHappily.</div>
+      {%- call render_example('Proxy Antartica 1') -%}
+        <div>This proxy name will be Proxy Antartica 1. It will be shown in proxy picker with this given name.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro proxy_ip(fields) -%}
+  {%- set field = fields.get('ip', none) -%}
+  {%- call(part) settings_element_basic(field, label='IP address') -%}
+    {%- if part == 'description' -%}
+      <div>Enter proxy IP address.</div>
+      <div>IP has a form: 123.123.123.123</div>
+      <div>Each section has a range from 0 to 255</div>
+      {%- call render_example('10.243.1.75') -%}
+        <div>InstaHappily will connect through the IP entered 10.243.1.75 which will serve as a proxy for every call made.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro proxy_port(fields) -%}
+  {%- set field = fields.get('port', none) -%}
+  {%- call(part) settings_element_basic(field, label='Port') -%}
+    {%- if part == 'description' -%}
+      <div>Enter proxy port.</div>
+      <div>Port is a number between 0 and 65535.</div>
+      {%- call render_example('8080') -%}
+        <div>InstaHappily will connect to the proxy using this port 8080.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro proxy_username(fields) -%}
+  {%- set field = fields.get('username', none) -%}
+  {%- call(part) settings_element_basic(field, label='Authentication username', description='Optional') -%}
+    {%- if part == 'description' -%}
+      <div>Enter proxy account username.</div>
+      {%- call render_example('UsernameForProxy') -%}
+        <div>InstaHappily will connect to the proxy using this username UsernameForProxy.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro proxy_password(fields) -%}
+  {%- set field = fields.get('password', none) -%}
+  {%- call(part) settings_element_basic(field, label='Authentication password', description='Optional') -%}
+    {%- if part == 'description' -%}
+      <div>Enter proxy account password.</div>
+      {%- call render_example('MyProxyPassword!2£') -%}
+        <div>InstaHappily will connect to the proxy using this password "MyProxyPassword!2£".</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+
+{# ############################################################################### #}
+{# Followers following tool settings #}
+{# ############################################################################### #}
+{%- macro follower_following_tool_profile_picker(fields) -%}
+  {%- set field = fields.get('follower_following_tool_profile_id', none) -%}
+  {% set possible_values = get_all_profiles_as_possible_values() %}
+  {%- call(part) settings_element_basic(field, visible='advanced', label='Profile which is going to be used to make request', possible_values=possible_values,
+    description='Leave empty to randomly pick a profile') -%}
+    {%- if part == 'description' -%}
+      <div>Leave empty to randomly pick a profile.</div>
+      <div>This is not affecting the relation or the result in any way, InstaHappily just need a profile to run requests.</div>
+      <div>InstaHappily will use this profile to make this request only.</div>
+      {%- call render_example('Profile1') -%}
+        Request to grab the accounts will be done as if they were made from Profile1.
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follower_following_tool_target_user_list(fields) -%}
+  {%- set field = fields.get('follower_following_tool_target_user_list', none) -%}
+  {%- call(part) settings_element_basic(field, label='Target users', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>Targeted user accounts. It can be your own username or username of some non-private account.</div>
+      <div>If there are more than 1 targeted user on the list, the result will be combined and users in the result
+      will be unique, meaning users that will come as a result wont repeat.</div>
+      <div>InstaHappily will grab the list of followers, followings, etc. of these accounts.</div>
+      <div>No need to put @ in the username.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>InstaHappily will grab user @InstaUserABC followers, non-followers, followings, etc.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follower_following_tool_type(fields) -%}
+  {%- set field = fields.get('follower_following_tool_type', none) -%}
+  {%- set possible_values = {
+    'followers' : 'Followers',
+    'followings' : 'Followings',
+    'nonfollowers' : 'Non-followers',
+    'all_unfollowers' : 'All unfollowers',
+    'active_unfollowers' : 'Active unfollowers',
+    'fans' : 'Fans',
+    'mutual_following' : 'Mutual following'
+  } -%}
+  {%- call(part) settings_element_basic(field, label='Relation between targeted users and accounts to grab', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will grab all the accounts that are in set correlation with targeted users.</div>
+      <div>Correlations:</div>
+      <ul>
+        <li><b>Followers</b> - returns accounts that are followers of the targeted users</li>
+        <li><b>Followings</b> - returns accounts that are followed by targeted users</li>
+        <li><b>Non-followers</b> - returns accounts that are followed by targeted users but
+        they are not following targeted users back</li>
+        <li><b>All unfollowers</b> - returns all the users who unfollowed targeted users</li>
+        <li><b>Unfollowers that are still followed</b> - returns all the users who unfollowed targeted users but targeted users are still following them</li>
+        <li><b>Fans</b> - returns accounts that are following targeted users but targeted users are not following them back</li>
+        <li><b>Mutual following - returns accounts that are following targeted users and targeted users are following them back</b></li>
+      </ul>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follower_following_tool_grab_amount(fields) -%}
+  {%- set field = fields.get('follower_following_tool_grab_amount', none) -%}
+  {%- call(part) settings_element_basic(field, label='Amount of accounts to grab',
+    description='Leave empty to grab all') -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will grab maximum of N accounts that are in correlation with targeted user. Amount set here.</div>
+      <div>Leave empty to grab all of them.</div>
+      {%- call render_example('100') -%}
+        <div>InstaHappily will grab maximum of 100 accounts.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follower_following_tool_unfollowers_compare_by(fields) -%}
+  {%- set field = fields.get('follower_following_tool_unfollowers_compare_by', none) -%}
+  {%- set possible_values = {
+    'latest' : 'Latest',
+    'earliest' : 'Earliest',
+    'day' : 'Today',
+    'month' : 'This month',
+    'year' : 'This year'
+  } -%}
+  {%- call(part) settings_element_basic(field, label='Return unfollowers by time they unfollowed', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>InstaHappily will return accounts by the time they unfollowed, chosen here.</div>
+      <div>Available options description:</div>
+      <ul>
+        <li><b>Latest</b> - returns accounts who unfollowed latest (from most recent)</li>
+        <li><b>Earliest</b> - returns accounts who unfollowed early (from oldest)</li>
+        <li><b>Today</b> - returns accounts who unfollowed today</li>
+        <li><b>This month</b> - returns accounts who unfollowed this month</li>
+        <li><b>This year</b> - returns accounts who unfollowed this year</li>
+      </ul>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro follower_following_tool_unfollowers_compare_track(fields) -%}
+  {%- set field = fields.get('follower_following_tool_unfollowers_compare_track', none) -%}
+  {%- set possible_values = {
+    'first' : 'First',
+    'median' : 'Middle',
+    'last' : 'Last'
+  } -%}
+  {%- call(part) settings_element_basic(field, label='Return unfollowers by starting from this point', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>Available options description:</div>
+      <ul>
+        <li><b>First</b> - select accounts starting from first ones</li>
+        <li><b>Middle</b> - select accounts starting from middle ones</li>
+        <li><b>Last</b> - select accounts starting from last ones</li>
+      </ul>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+{# ############################################################################### #}
+{# Custom lists #}
+{# ############################################################################### #}
+{%- macro custom_list_type_key(fields) -%}
+  {%- set field = fields.get('list_type_key', none) -%}
+  {%- set possible_values = {
+    'usernames' : 'Usernames',
+    'hashtags' : 'Hashtags',
+    'comments' : 'Comments',
+    'locations' : 'Locations',
+    'links' : 'Links',
+  } -%}
+  {%- call(part) settings_element_basic(field, label='What\'s in the list', possible_values=possible_values) -%}
+    {%- if part == 'description' -%}
+      <div>List type.</div>
+      <div>Possible values in the list:</div>
+      <ul>
+        <li><b>Usernames</b> - this list will contain accounts usernames</li>
+        <li><b>Hashtags</b> - this list will contain hashtags</li>
+        <li><b>Comments</b> - this list will contain comments</li>
+        <li><b>Locations</b> - this list will contain locations</li>
+        <li><b>Links</b> - this list will contain links (URLs)</li>
+      </ul>
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro custom_lists_comments(fields) -%}
+  {%- set field = fields.get('value', none) -%}
+  {%- call(part) settings_element_basic(field, label='Comments list', icon='comment', emojiable=true) -%}
+    {%- if part == 'description' -%}
+      <div>List of the comments</div>
+      {%- call render_example('Awesome, I like it!')-%}
+        InstaHappily will make comment "Awesome, I like it!".
+      {%- endcall -%}
+      <div class="mt-3"><b>Special:</b> If you want to add the username of the poster to the comment include this in the comment <b>@{}</b> </div>
+      {%- call render_example('Excellent! @{}') -%}
+        <div>If the poster username is @ILoveToPost, then the comment that will be left on the post is "Excellent! @ILoveToPost"</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro custom_lists_users(fields) -%}
+  {%- set field = fields.get('value', none) -%}
+  {%- call(part) settings_element_basic(field, label='Users list', icon='at') -%}
+    {%- if part == 'description' -%}
+      <div>List of users.</div>
+      {%- call render_example('InstaUserABC') -%}
+        <div>Add user @InstaUserABC to the list.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro custom_lists_locations(fields) -%}
+  {%- set field = fields.get('value', none) -%}
+  {%- call(part) settings_element_basic(field, label='Locations list', icon='map-marker-alt') -%}
+    {%- if part == 'description' -%}
+      <ul>Locations can be found by:
+        <li>Navigating through <b><a href="https://www.instagram.com/explore/locations/" target="_blank">https://www.instagram.com/explore/locations/</a></b></li>
+        <li>Instagram search</li>
+      </ul>
+      <div>If the location url is: <b>https://www.instagram.com/explore/locations/221379350/the-north-pole/</b></div>
+      <div>Use everything till the end (or just the number) after <b>https://www.instagram.com/explore/locations/</b></div>
+      <div>to get final and correct location: <b>221379350/the-north-pole/</b></div>
+      {%- call render_example('c815012/richmond-united-kingdom/')-%}
+        <div>InstaHappily will use location Richmond, United Kingdom.</div>
+      {%- endcall -%}
+      {%- call render_example('256266910')-%}
+        <div>InstaHappily will use location London City, United Kingdom.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro custom_lists_tags(fields) -%}
+  {%- set field = fields.get('value', none) -%}
+  {%- call(part) settings_element_basic(field, label='Hashtags list', icon='hashtag') -%}
+    {%- if part == 'description' -%}
+      <div>List of hashtags.</div>
+      <div>Don't include # sign (hash) in the hashtag, just put the tag.</div>
+      {%- call render_example('loveinsta') -%}
+        <div>InstaHappily will use #loveinsta as hashtag.</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro custom_lists_links(fields) -%}
+  {%- set field = fields.get('value', none) -%}
+  {%- call(part) settings_element_basic(field, label='Links list', icon='link') -%}
+    {%- if part == 'description' -%}
+      <div>List of links.</div>
+      <div>Possible links (URL) formats:</div>
+      <ul>
+        <li><b>full:</b> https://www.IG.com/p/Aj0J4bJDY7r/?taken-at=128316221</li>
+        <li><b>post link:</b> https://www.IG.com/p/Aj0J4bJDY7r/</li>
+        <li><b>post handle:</b> Aj0J4bJDY7r/?taken-at=128316221</li>
+        <li><b>post ID:</b> Aj0J4bJDY7r</li>
+      </ul>
+      {%- call render_example('Fv0J4AJ3Y7r/?taken-at=628416252') -%}
+        <div>Post handle</div>
+      {%- endcall -%}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro custom_lists_picker_lists(custom_lists_dict_by_type) -%}
+  {%- set custom_list_types_keys_mappings = {
+      'usernames': 'Usernames',
+      'hashtags': 'Hashtags',
+      'comments': 'Comments',
+      'locations': 'Locations',
+      'links': 'Links',
+      'tool_request': 'Usernames',
+  } -%}
+  {%- set custom_list_source_mappings =  {
+      'usernames': 'Custom list',
+      'hashtags': 'Custom list',
+      'comments': 'Custom list',
+      'locations': 'Custom list',
+      'links': 'Custom list',
+      'tool_request': 'Tool request',
+  } -%}
+  {#
+  custom_lists_dict_by_type = {
+    'usernames': [
+      {
+        id: 1,
+        name: 'string',
+        sub_type: 'string'
+      },
+      ...
+    ],
+    ...
+  }
+ #}
+  {%- set list_types = custom_lists_dict_by_type.items() -%}
+  {%- for list_type, custom_lists_info in list_types -%}
+  <div class="modal fade js-custom-list-picker-modal" data-list-type-key="{{ list_type }}" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+
+        <div class="alert alert-primary m-0" role="alert">
+          <i class="fas fa-info mr-3"></i> Select by clicking on a row. Deselect by clicking on a selected row.
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-striped table-hover js-data-table-select" cellspacing="0" width="100%">
+            <thead>
+              <tr>
+                <th class="d-none"></th>
+                <th class="d-none"></th>
+                <th class="d-none"></th>
+                <th class="th-sm">Name</th>
+                <th class="th-sm">What's in the list</th>
+                <th class="th-sm">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              {%- for custom_list_info in custom_lists_info -%}
+                <tr>
+                  {# Data columns #}
+                  <td class="d-none">{{ custom_list_info.id }}</td>
+                  <td class="d-none">{{ custom_list_info.name }}</td>
+                  <td class="d-none">{{ custom_list_info.sub_type }}</td>
+                  {# Display columns #}
+                  <td>
+                    <h6>{{ custom_list_info.name }}</h6>
+                  </td>
+                  <td>
+                    <h6>{{ custom_list_types_keys_mappings[custom_list_info.sub_type] }}</h6>
+                  </td>
+                  <td>
+                    {# This has to be without wrapper tags in td tag #}
+                    {{ custom_list_source_mappings[custom_list_info.sub_type] }}
+                  </td>
+                </tr>
+              {%- endfor -%}
+
+            </tbody>
+          </table>
+        </div>
+
+      </div> {# modal body #}
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+
+      </div> {# modal content, dialog and itself #}
+    </div>
+  </div>
+  {%- endfor -%}
+
+
+
+{%- endmacro -%}

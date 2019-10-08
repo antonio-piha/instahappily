@@ -1,0 +1,32 @@
+{%- extends "layout.jinja2" %}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+{%- from "_elements.jinja2" import profile_top_bar with context -%}
+
+{% block navbar %}
+  <li class="nav-item">
+    <button class="btn btn-primary btn-sm waves-effect waves-light" data-form-to-submit="js-form-profile-settings">
+      <i class="fas fa-check mr-1"></i>Save changes
+    </button>
+  </li>
+{% endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    PROFILE DEFAULTS
+  </li>
+{%- endblock -%}
+
+{% block content %}
+
+  {#Body#}
+  <form method="post" action="" class="js-form-profile-settings">
+    {{ form.csrf_token }}
+    {{ proxy_form.csrf_token }}
+    {%- set fields = form._fields -%}
+    {%- set proxy_fields = proxy_form._fields -%}
+
+    {%- include "_all_profile_settings.jinja2" with context -%}
+
+</form>
+
+{%- endblock %}

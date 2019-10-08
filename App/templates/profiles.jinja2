@@ -1,0 +1,155 @@
+{%- extends "layout.jinja2" -%}
+{%- from "_formhelpers.jinja2" import activate_button, deactivate_button with context -%}
+
+{% block navbar %}
+  <li class="nav-item">
+    <a class="" href="/add-profile">
+      <button type="button" class="btn btn-primary btn-sm">
+        <i class="fas fa-user-plus mr-1"></i> Add new profile
+      </button>
+    </a>
+  </li>
+{% endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    PROFILES
+  </li>
+{%- endblock -%}
+
+{% block content %}
+
+{# ======================================================================= #}
+{# Active profiles #}
+{# ======================================================================= #}
+<div class="card my-3">
+  <div class="card-header unique-color-dark white-text">
+    <i class="fas fa-users mr-1"></i> Profiles
+  </div>
+  <div class="card-body">
+
+    {%- if profiles -%}
+      <div class="table-responsive">
+        <table class="table table-hover js-data-table" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th class="th-sm">Name</th>
+              <th class="th-sm">Proxy</th>
+              <th class="th-sm">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {%- for profile in profiles -%}
+              <tr>
+                <td>
+                  <h6>
+                    <a class="" href="/profile/{{profile.id}}">
+                      <button type="button" class="btn btn-outline-primary btn-rounded btn-sm">
+                        <i class="fas fa-user mr-2"></i>{{ profile.username }}
+                      </button>
+                    </a>
+                  </h6>
+                </td>
+                <td>
+                  {%- if profile.proxy_id -%}
+                    <span class="badge badge-pill badge-success badge-align-middle">
+                      <i class="fas fa-check"></i>
+                    </span>
+                  {%- else -%}
+                    <span class="badge badge-pill badge-danger badge-align-middle">
+                      <i class="fas fa-times"></i>
+                    </span>
+                  {%- endif -%}
+                </td>
+                <td>
+                  <a class="" href="/profile/{{profile.id}}/edit">
+                    <button type="button" class="btn btn-primary btn-sm">
+                      <i class="fas fa-cog mr-2"></i>Settings
+                    </button>
+                  </a>
+                  <a class="" href="/profile/{{profile.id}}/sessions">
+                    <button type="button" class="btn btn-primary btn-sm">
+                      <i class="fas fa-cubes mr-2"></i>Sessions
+                    </button>
+                  </a>
+                  {{ deactivate_button(form=profile_deactivate_form, action='/profile/{}/deactivate'.format(profile.id)) }}
+                </td>
+              </tr>
+            {%- endfor -%}
+
+          </tbody>
+        </table>
+      </div>
+    {%- else -%}
+      There are no profiles
+    {%- endif -%}
+
+  </div> {# card-body #}
+</div>
+
+
+{# ======================================================================= #}
+{# Deactivated profiles #}
+{# ======================================================================= #}
+<div class="card my-3">
+  <div class="card-header unique-color-dark white-text">
+    <i class="fas fa-user-slash mr-1"></i> Deactivated profiles
+  </div>
+  <div class="card-body">
+
+    {%- if deactivated_profiles -%}
+      <div class="table-responsive">
+        <table class="table table-hover js-data-table" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th class="th-sm">Status</th>
+              <th class="th-sm">Name</th>
+              <th class="th-sm">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {%- for profile in deactivated_profiles -%}
+              <tr>
+                <td>
+                  <h6>
+                    <span class="badge badge-pill badge-light badge-align-middle">Deactivated</span>
+                  </h6>
+                </td>
+                <td>
+                  <h6>
+                    <a class="" href="/profile/{{profile.id}}/edit">
+                      <button type="button" class="btn btn-outline-primary btn-rounded btn-sm">
+                        <i class="fas fa-user mr-2"></i>{{ profile.username }}
+                      </button>
+                    </a>
+                  </h6>
+                </td>
+                <td>
+                  <a class="" href="/profile/{{profile.id}}/edit">
+                    <button type="button" class="btn btn-primary btn-sm">
+                      <i class="fas fa-cog mr-2"></i>Settings
+                    </button>
+                  </a>
+                  <a class="" href="/profile/{{profile.id}}/sessions">
+                    <button type="button" class="btn btn-primary btn-sm">
+                      <i class="fas fa-cubes mr-2"></i>Sessions
+                    </button>
+                  </a>
+                  {{ activate_button(form=profile_activate_form, action='/profile/{}/activate'.format(profile.id)) }}
+                </td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
+
+    {%- else -%}
+      No deactivated profiles
+    {%- endif -%}
+
+  </div> {# card-body #}
+</div>
+
+{%- endblock %}

@@ -1,0 +1,94 @@
+{%- extends "layout.jinja2" -%}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+{%- from "_formhelpers.jinja2" import render_field, render_one_button_form, activate_button, deactivate_button with context -%}
+{%- from "_elements.jinja2" import profile_link, profile_nav_item with context -%}
+
+{%- block navbar -%}
+  {%- set running = SessionService.is_session_running(session.id) -%}
+
+  {%- call all_settings.settings_actions_bar() -%}
+    <li class="nav-item">
+      {{ profile_link(profile) }}
+    </li>
+    {# Save button + save & restart #}
+    <li class="nav-item">
+      {%- if running -%}
+         <div class="btn-group m-1">
+          <button type="button" class="btn btn-primary btn-sm px-3" data-form-to-submit="js-form-session-settings" data-additional-query-params="{'restart':true}">
+            <i class="fas fa-check mr-1"></i>Save & restart
+          </button>
+          <button type="button" class="btn btn-primary btn-sm dropdown-toggle px-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <div class="dropdown-menu text-center">
+            <button type="button" class="btn btn-primary btn-sm" data-form-to-submit="js-form-session-settings">
+              <i class="fas fa-check mr-1"></i>Save changes
+            </button>
+          </div>
+        </div>
+      {%- else -%}
+        <button class="btn btn-primary btn-sm" data-form-to-submit="js-form-session-settings">
+          <i class="fas fa-check mr-1"></i>Save changes
+        </button>
+      {%- endif -%}
+    </li>
+    {%- if session.active -%}
+      <li class="nav-item">
+        {%- if running -%}
+          <span class="badge badge-pill badge-success badge-align-middle">Running</span>
+        {%- else -%}
+          <span class="badge badge-pill badge-dark badge-align-middle">Stopped</span>
+        {%- endif -%}
+      </li>
+      <li class="nav-item">
+        {%- if running -%}
+          {{ render_one_button_form(form=session_stop_form, action='/session/{}/stop'.format(session.id), double_check=true, button_text='Stop', button_class='btn-dark', icon='stop') }}
+        {%- else -%}
+          {{ render_one_button_form(form=session_start_form, action='/session/{}/start'.format(session.id), double_check=true, button_text='Run', button_class='btn-success', icon='play') }}
+        {%- endif -%}
+      </li>
+      <li class="nav-item">
+        {{ render_one_button_form(form=session_duplicate_form, action='/session/{}/duplicate'.format(session.id), button_text='Duplicate', button_class='default-color-dark', icon='clone') }}
+      </li>
+      <li class="nav-item">
+        {{ deactivate_button(form=session_deactivate_form, action='/session/{}/deactivate'.format(session.id)) }}
+      </li>
+    {%- else -%}
+      <li class="nav-item">
+        <span class="badge badge-pill badge-dark">Deactivated</span>
+      </li>
+      <li class="nav-item">
+        {{ activate_button(form=session_activate_form, action='/session/{}/activate'.format(session.id)) }}
+      </li>
+    {%- endif -%}
+
+  {%- endcall -%}
+
+{%- endblock -%}
+
+{%- block mobi_menu_navbar_small_info -%}
+  {{ profile_nav_item(profile) }}
+{%- endblock -%}
+
+
+{%- block content -%}
+{%- set fields = form._fields -%}
+
+  {# Javascript classes:  #}
+  {# - js-form-session-settings : for submit button which is outside the form #}
+  {# - js-session-settings-action-listener : listener for any other event that is going to happen in the form #}
+  <form class="all-session-settings js-session-settings-action-listener js-form-session-settings" method="post" action="">
+
+    {{ form.csrf_token }}
+
+    <div class="card">
+      <div class="card-body">
+        {{ render_field(form.session_name, label='Session name') }}
+      </div>
+    </div>
+
+    {%- include "_all_session_settings.jinja2" with context -%}
+
+  </form>
+
+{%- endblock -%}

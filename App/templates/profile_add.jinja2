@@ -1,0 +1,49 @@
+  {%- extends "layout.jinja2" -%}
+{%- from "_formhelpers.jinja2" import render_field, render_submit with context -%}
+
+{% block navbar %}
+  <li class="nav-item">
+    <a class="" href="https://www.instagram.com/accounts/emailsignup/" target="_blank">
+      <button type="button" class="btn btn-primary btn-sm">
+        <i class="fab fa-instagram mr-1"></i> Create new profile
+      </button>
+    </a>
+  </li>
+{% endblock %}
+
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    ADD PROFILE
+  </li>
+{%- endblock -%}
+
+{% block content %}
+
+<div class="form-row justify-content-center py-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        {#Header#}
+        <div class="text-center blue-text">
+          <h3><i class="fab fa-instagram left"></i> Add profile</h3>
+        </div>
+        {#Body#}
+        <form method="post" action="">
+          {{ form.csrf_token }}
+          {{ render_field(form.username, label='Username', icon='user') }}
+          {{ render_field(form.password, label='Password', icon='key') }}
+          <div class="text-center">
+            {{ render_submit(form.submit) }}
+          </div>
+        </form>
+      </div>
+      {#Footer#}
+      <div class="modal-footer">
+          <div><i class="fas fa-lock mr-3 text-success"></i>Password is securely encrypted and it isn't going anywhere</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- endblock %}

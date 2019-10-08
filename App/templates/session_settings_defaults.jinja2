@@ -1,0 +1,41 @@
+{%- extends "layout.jinja2" -%}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+{%- from "_elements.jinja2" import profile_link with context -%}
+
+{%- block navbar -%}
+  {%- call all_settings.settings_actions_bar() -%}
+    <li class="nav-item">
+      <button class="btn btn-primary btn-sm m-1" data-form-to-submit="js-form-session-settings">
+        <i class="fas fa-check mr-1"></i>Save changes
+      </button>
+    </li>
+  {%- endcall -%}
+
+{%- endblock -%}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    SESSION DEFAULTS
+  </li>
+{%- endblock -%}
+
+
+{%- block content -%}
+  {%- set fields = form._fields -%}
+
+  <div class="card">
+    <div class="card-body">
+       Use this form to change sessions settings defaults for new sessions. When new sessions are created these settings are considered as a template.
+       Changing the default session settings <b>will not affect or override</b> existing sessions settings.
+    </div>
+  </div>
+
+  <form class="all-session-settings js-session-settings-action-listener js-form-session-settings" method="post" action="">
+
+    {{ form.csrf_token }}
+
+    {%- include "_all_session_settings.jinja2" with context -%}
+
+  </form>
+
+{%- endblock -%}

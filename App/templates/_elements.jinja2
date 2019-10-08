@@ -1,0 +1,37 @@
+  {%- macro profile_link(profile=none) -%}
+  {%- if profile is not none -%}
+    <a class="nav-link waves-effect" href="/profile/{{ profile.id }}">
+      <span class="badge badge-pill badge-info font-weight-bold p-2">
+        <i class="fas fa-user mr-1"></i>{{ profile.username }}
+      </span>
+    </a>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro chart(name=none) -%}
+  <div class="chart-container js-chart-{{ name }}">
+    <canvas></canvas>
+  </div>
+{%- endmacro -%}
+
+{%- macro profile_nav_item(profile=none) -%}
+    <li class="nav-item">
+      {{ profile_link(profile) }}
+    </li>
+{%- endmacro -%}
+
+{# BARS #}
+{%- macro top_bar(omit_top_bar_wrapper=false) -%}
+  {{ caller() }}
+{%- endmacro -%}
+
+{%- macro profile_top_bar(profile=none) -%}
+  {%- set parent_caller = caller -%}
+  {%- call top_bar() -%}
+    {{ profile_nav_item(profile) }}
+    {{ parent_caller() }}
+  {%- endcall -%}
+{%- endmacro -%}
+
+
+

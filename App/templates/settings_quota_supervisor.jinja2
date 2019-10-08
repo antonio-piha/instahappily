@@ -1,0 +1,22 @@
+{% import "_all_settings.jinja2" as all_settings with context %}
+
+<div class="row">
+  <div class="col-md-6">
+    {{ all_settings.do_quota_supervise(fields) }}
+    {{ all_settings.quota_supervisor_sleep_after_list(fields) }}
+    {{ all_settings.quota_supervisor_peak_likes_hourly(fields) }}
+    {{ all_settings.quota_supervisor_peak_likes_daily(fields) }}
+    {{ all_settings.quota_supervisor_peak_comments_hourly(fields) }}
+    {{ all_settings.quota_supervisor_peak_comments_daily(fields) }}
+  </div>
+  <div class="col-md-6">
+    {{ all_settings.quota_supervisor_peak_follows_hourly(fields) }}
+    {{ all_settings.quota_supervisor_peak_follows_daily(fields) }}
+    {{ all_settings.quota_supervisor_peak_unfollows_hourly(fields) }}
+    {{ all_settings.quota_supervisor_peak_unfollows_daily(fields) }}
+    {{ all_settings.quota_supervisor_sleepyhead(fields) }}
+    {{ all_settings.quota_supervisor_stochastic_flow(fields) }}
+  </div>
+</div>
+
+

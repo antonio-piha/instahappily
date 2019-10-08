@@ -1,0 +1,39 @@
+{%- extends "layout.jinja2" -%}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+{%- import "_layout_helpers.jinja2" as layout_helpers with context -%}
+{%- from "follower_following_tools.jinja2" import follower_following_tool_result with context -%}
+
+{% block navbar %}
+  {% call all_settings.settings_actions_bar() %}
+  {% endcall %}
+{%- endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    TOOLS
+  </li>
+{%- endblock -%}
+
+{% block content %}
+
+  <div class="card my-3">
+    <div class="card-header unique-color-dark white-text">
+      <i class="fas fa-magnet mr-3"></i>Request
+    </div>
+    <div class="card-body">
+
+      <form class="js-follower-following-tool-create-request" method="post" action="/follower-following-tools/request/{{ tool_request.id }}/edit">
+        {{ form.csrf_token }}
+        {{ layout_helpers.follower_following_tool_request(form) }}
+
+      </form>
+      <button type="button" class="btn btn-primary btn-sm" data-form-to-submit="js-follower-following-tool-create-request">
+        Save and re-run
+      </button>
+
+    </div>
+  </div>
+
+  {{ follower_following_tool_result(display_info) }}
+
+{%- endblock %}

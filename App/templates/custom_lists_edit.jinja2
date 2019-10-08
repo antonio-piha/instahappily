@@ -1,0 +1,33 @@
+{%- extends "layout.jinja2" -%}
+{%- import "_all_settings.jinja2" as all_settings with context -%}
+{%- import "_layout_helpers.jinja2" as layout_helpers with context -%}
+
+
+{% block navbar %}
+  {%- call all_settings.settings_actions_bar() -%}
+  {%- endcall -%}
+{% endblock %}
+
+{%- block mobi_menu_navbar_small_info -%}
+  <li class="nav-item">
+    EDIT CUSTOM LIST
+  </li>
+{%- endblock -%}
+
+{% block content %}
+
+<div class="card my-3">
+  <div class="card-header unique-color-dark white-text">
+    <i class="fas fa-magnet mr-3"></i>Edit custom list
+  </div>
+  <div class="card-body">
+
+      {{ layout_helpers.custom_list_form(form, action = '/custom-lists/{}/edit'.format(custom_list.id)) }}
+
+  </div>
+</div>
+
+
+{%- endblock %}
+
+

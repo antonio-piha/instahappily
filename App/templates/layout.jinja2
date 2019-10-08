@@ -1,0 +1,121 @@
+{%- extends "base.jinja2" -%}
+{%- import "_layout_helpers.jinja2" as layout_helpers with context -%}
+
+{%- macro navbar_wrapper() -%}
+  {%- block navbar -%}{%- endblock -%}
+{%- endmacro -%}
+
+{%- block base_content -%}
+
+  {#Main Navigation#}
+  <header>
+    {# Navbar #}
+    {# ========================= #}
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light white scrolling-navbar">
+      <div class="container-fluid">
+
+        {# Collapse #}
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-supported-content"
+          aria-controls="navbar-supported-content" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        {# Mobile menu navbar small info  #}
+        <div class="d-inline-flex d-lg-none rounded grey lighten-3 p-1" data-toggle="modal" data-target="#app_information_modal">
+          <img src="{{ url_for('static', filename='img/InstaHappily-logo.png') }}" class="img-fluid" alt="" />
+        </div>
+        <ul class="navbar-nav ml-auto d-inline-flex d-lg-none">
+          {%- block mobi_menu_navbar_small_info -%}{%- endblock -%}
+        </ul>
+
+        {# Links #}
+        <div class="collapse navbar-collapse" id="navbar-supported-content">
+
+          {# Left side #}
+          {# ========================= #}
+          {# Large screen navbar - This one will be present on large screens only - holds the navbar actions so we won't show it on mobile menu #}
+          <ul class="navbar-nav mr-auto d-none d-lg-inline-flex">
+            {{ navbar_wrapper()}}
+          </ul>
+
+          {# Mobile screen collapsible navbar content #}
+          <div class="d-block d-lg-none">
+            {% if nav.menu %}
+              {{ nav.menu.render(renderer='sidebar_renderer')}}
+            {% endif %}
+          </div>
+
+          {# Right side #}
+          {# ========================= #}
+          <ul class="navbar-nav nav-flex-icons">
+            <li class="nav-item">
+              <a href="https://www.instagram.com/instahappily/" class="nav-link waves-effect" target="_blank">
+                <i class="fab fa-instagram"></i>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="https://www.facebook.com/instahappily/" class="nav-link waves-effect" target="_blank">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+            </li>
+          </ul>
+
+        </div>
+
+        {# For mobile version only #}
+        {# ========================= #}
+        <div class="d-inline d-lg-none ml-auto">
+          {# Collapse button #}
+          <button class="navbar-toggler toggler-example" type="button" data-toggle="collapse" data-target="#mobile-specific-page-actions-menu"
+            aria-controls="mobile-specific-page-actions-menu" aria-expanded="false" aria-label="Toggle actions">
+            <span class="dark-blue-text"><i class="fas fa-ellipsis-v fa-1x"></i></span>
+          </button>
+        </div>
+      </div>
+
+      {# Collapsible content - mobile menu actions for page #}
+        <div class="collapse navbar-collapse" id="mobile-specific-page-actions-menu">
+          <ul class="navbar-nav mr-auto d-lg-none">
+            {{ navbar_wrapper() }}
+          </ul>
+        </div>
+      {# Collapsible content #}
+    </nav>
+    {# Navbar #}
+
+
+    {# Sidebar #}
+    {# ========================= #}
+    {# Is visible only on lg screen (larger than md) - so we have to show this menu on mobile menu as well #}
+    <div class="sidebar-fixed position-fixed">
+
+      <div class="logo-wrapper text-center p-2 mx-1 my-2 waves-effect" data-toggle="modal" data-target="#app_information_modal">
+        <img src="{{ url_for('static', filename='img/InstaHappily-logo.png') }}" class="img-fluid" alt="">
+      </div>
+
+      {%- if nav.menu -%}
+        {{ nav.menu.render(renderer='sidebar_renderer')}}
+      {%- endif -%}
+
+    </div>
+
+  </header>
+  {#Main Navigation#}
+
+
+
+  {#Main layout#}
+  <main class="pt-5 mx-sm-2 mx-md-3 mx-lg-4">
+    <div class="container-fluid mt-5">
+      {%- include 'flash_messages.jinja2' -%}
+
+        {%- block content -%}{%- endblock -%}
+    </div>
+  </main>
+  {#Main layout#}
+
+
+  {# Other - not layout #}
+  {{ layout_helpers.app_information_modal() }}
+  {# Other #}
+{% endblock %}

@@ -1,0 +1,370 @@
+
+{# ============================================================ #}
+{# FORM HELPERS =============================================== #}
+{# ============================================================ #}
+
+{%- macro render_errors(field) -%}
+<div class="text-danger js-errors">
+  {%- if field.errors -%}
+    {%- for error in field.errors -%}
+
+      {{ error }}
+    {%- endfor -%}
+  {%- endif -%}
+</div>
+{%- endmacro -%}
+
+{%- macro render_hidden(field) -%}
+  <input name="{{ field.name }}" type="{{ field.type }}" id="field-{{ field.id }}" value="{{ field.data }}"/>
+{%- endmacro -%}
+
+{%- macro render_icon(icon) -%}
+  {# Icon #}
+  {%- if icon -%}
+    <i class="fas fa-{{ icon }} prefix grey-text"></i>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro render_regular_input(name, type, id=none, value=none, required=none, emojiable=none) -%}
+  <input type="{{ type }}" class="form-control" aria-describedby="described-{{ id }}"
+      {% if id is not none %} id="field-{{ id }}" {% endif %}
+      {% if name is not none %} name="{{ name }}" {% endif %}
+      {% if value is not none %} value="{{ value }}" {% endif %}
+      {% if required %} required {% endif %}
+      {% if emojiable %} data-emojiable-for-enable {% endif %}
+      tabindex="1"
+      />
+{%- endmacro -%}
+
+{%- macro render_select(name, possible_values, id=none, value=none, required=none) -%}
+  <select class="browser-default custom-select"
+    {%- if id is not none %} id="field-{{ id }}" aria-describedby="described-{{ id }}" {% endif -%}
+    {%- if name is not none %} name="{{ name }}" {% endif -%}
+    {%- if required %} required {% endif -%}
+    tabindex="1">
+    <option value="" {% if value is none -%} selected {%- endif %}{% if required %} disabled {% endif -%}>Choose ...</option>
+    {%- for option_value, option_text in possible_values.items() -%}
+      <option value="{{ option_value }}" {% if option_value == value %} selected {% endif %}>{{ option_text }}</option>
+    {%- endfor -%}
+  </select>
+{%- endmacro -%}
+
+{%- macro render_label(label, for_id=none) -%}
+  {%- if label -%}
+    <label {% if for_id is not none %}for="field-{{ for_id }}"{% endif %}>{{ label }}</label>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro render_description(description) -%}
+   {%- if description -%}
+    <small class="form-text text-muted">{{ description }}</small>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro render_basic_field(field, label=none, icon=none, description=none) -%}
+  {# Class md-form has to be here #}
+  <div class="md-form">
+    {{ render_icon(icon) }}
+    {{ render_regular_input(name=field.name, type=field.type, id=field.id, value=field.data, required=field.flags.required) }}
+    {{ render_label(label, field.id)}}
+    {{ render_description(description) }}
+    {{ render_errors(field) }}
+  </div>
+{%- endmacro -%}
+
+{%- macro render_select_field(field, label=none, icon=none, description=none, possible_values=none) -%}
+  {# Class md-form has to be here #}
+  <div class="md-form select">
+    {{ render_icon(icon) }}
+    {{ render_label(label, field.id)}}
+    {{ render_select(name=field.name, id=field.id, possible_values=possible_values, value=field.data, required=field.flags.required) }}
+    {{ render_description(description) }}
+    {{ render_errors(field) }}
+  </div>
+{%- endmacro -%}
+
+{%- macro render_boolean(field, label=none, icon=none, description=none) -%}
+  <div class="custom-control custom-checkbox">
+    {{ render_icon(icon) }}
+    {# Input #}
+    <input name="{{ field.name }}" type="checkbox" class="custom-control-input" id="field-{{ field.id }}"
+      {% if field.data %} checked {% endif %}
+      />
+    {# Label #}
+    {%- if label -%}
+      <label class="custom-control-label" for="field-{{ field.id }}">{{ label }}</label>
+    {%- endif -%}
+    {{ render_description(description) }}
+  </div>
+{%- endmacro -%}
+
+{%- macro list_row(field_name=none, icon=none, index=none, value=none, possible_values=none, emojiable=none) -%}
+  <div class="js-list-item">
+    <div class="d-inline">
+      <button type="button" class="btn btn-danger btn-circle js-list-action-remove m-0"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="d-inline md-form input-wrapper ml-2">
+      {{ render_icon(icon) }}
+      {# Input #}
+      {%- set name = none -%}
+      {%- if field_name != none and index != none -%}
+        {% set name = field_name ~ '-' ~ index -%}
+      {%- endif -%}
+      {%- if possible_values is none -%}
+        {{ render_regular_input(name=name, type='text', value=value, required=false, emojiable=emojiable) }}
+      {%- else -%}
+        {{ render_select(name=name, possible_values=possible_values, value=value, required=false) }}
+      {%- endif -%}
+    </div>
+  </div>
+{%- endmacro -%}
+{%- macro render_list(field, label=none, icon=none, description=none, possible_values=none, emojiable=none) -%}
+  <div class="md-form list js-list">
+    {{ render_label(label) }}
+    {{ render_description(description) }}
+    <div class="d-none js-template">
+      {{ list_row(field_name=field.name, icon=icon, possible_values=possible_values, emojiable=emojiable) }}
+    </div>
+    <div class="md-form form-sm form-inline m-0 mb-2 d-none js-list-filter">
+      <i class="fas fa-filter"></i>
+      <input type="text" class="form-control form-control-sm ml-2 w-75"/>
+    </div>
+    {# To avoid Jinja scope limitations we need to use namespace #}
+    {%- set counter = namespace(i=0) -%}
+    <div class="list-items js-list-items">
+      {%- if field.data -%}
+        {%- for value in field.data -%}
+          {{ list_row(field_name=field.name, icon=icon, index=counter.i, value=value, possible_values=possible_values, emojiable=emojiable) }}
+          {%- set counter.i = counter.i + 1 -%}
+        {%- endfor -%}
+      {%- else -%}
+        {# If there's not data at all, just render empty element #}
+        {{ list_row(field_name=field.name, icon=icon, index=counter.i, possible_values=possible_values, emojiable=emojiable) }}
+        {%- set counter.i = counter.i + 1 -%}
+      {%- endif -%}
+    </div>
+    <button type="button" class="btn btn-primary btn-circle js-list-action-add"><i class="fas fa-plus"></i></button>
+    <div class="d-none js-list-metadata" data-last-index="{{ counter.i }}" data-field-name="{{ field.name }}"></div>
+  </div>
+{%- endmacro -%}
+
+{%- macro render_object(field) -%}
+  <div class="d-none js-object-field">
+    <input name="{{ field.name }}" type="hidden" id="field-{{ field.id }}" />
+    <div class="js-initial-value">
+      {# Must check to not print None #}
+      {%- if field.data -%}
+        {{ field.data }}
+      {%- endif -%}
+    </div>
+  </div>
+{%- endmacro -%}
+
+{%- macro render_submit(field, label=none) -%}
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary waves-effect waves-light">
+      {%- if label -%} {{ label }} {%- else -%} {{ field.label.text }} {%- endif -%}
+    </button>
+  </div>
+{%- endmacro -%}
+
+{%- macro render_field(field, label=none, icon=none, description=none, possible_values=none, emojiable=none) -%}
+  {%- if field.type == 'object' -%}
+    {{ render_object(field=field) }}
+  {%- elif field.type == 'boolean' -%}
+    {{ render_boolean(field=field, label=label, icon=icon, description=description) }}
+  {%- elif field.type == 'hidden' -%}
+    {{ render_hidden(field=field) }}
+  {%- elif field.type == 'list' -%}
+    {{ render_list(field=field, label=label, icon=icon, description=description, possible_values=possible_values, emojiable=emojiable) }}
+  {%- else -%}
+    {%- if possible_values is none -%}
+      {{ render_basic_field(field=field, label=label, icon=icon, description=description) }}
+    {%- else -%}
+      {{ render_select_field(field=field, label=label, icon=icon, description=description, possible_values=possible_values) }}
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro render_fields(fields) -%}
+  {# Fields #}
+  {%- for name, field in fields -%}
+    {%- if name == 'csrf_token' -%}
+      {{ field }}
+    {%- elif name == 'submit' -%}
+      <p></p>
+    {%- else -%}
+      {{ render_field(field, name) }}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endmacro -%}
+
+{# ============================================================ #}
+{# OTHER HELPERS =============================================== #}
+{# ============================================================ #}
+
+{%- macro render_one_button_form(form, action='', button_text='', button_class='btn-primary', double_check=false, icon=none) -%}
+  <form method="post" action="{{ action }}" class="d-inline">
+    {%- if form.csrf_token -%}
+      {{ form.csrf_token }}
+    {%- endif -%}
+    {%- if double_check -%}
+      {{ submit_confirmation_popover() }}
+      <a tabindex="0" role="button" class="js-fake-submit">
+        <button type="button" class="btn btn-sm {{ button_class }} white-text">
+          {%- if icon -%}
+            <i class="fas fa-{{icon}} mr-1"></i>
+          {%- endif -%}
+          {{ button_text }}
+        </button>
+      </a>
+    {%- else -%}
+      <button type="submit" role="button" class="btn btn-sm {{ button_class }} white-text">
+        {%- if icon -%}
+        <i class="fas fa-{{icon}} mr-1"></i>
+        {%- endif -%}
+        {{ button_text }}
+      </button>
+    {%- endif -%}
+  </form>
+{%- endmacro -%}
+
+{%- macro submit_confirmation_popover() -%}
+  <div class="d-none js-submit-confirmation-popover">
+    <div class="content">
+      <button type="button" class="btn success-color-dark white-text">
+        <i class="fas fa-check-circle mr-1"></i>Confirm
+      </button>
+    </div>
+  </div>
+{%- endmacro -%}
+
+{%- macro activate_button(form, action) -%}
+  {{ render_one_button_form(form=form, action=action, button_text='Activate', button_class='btn-success', icon='power-off') }}
+{%- endmacro -%}
+
+{%- macro deactivate_button(form, action) -%}
+  {{ render_one_button_form(form=form, action=action, double_check=true, button_text='Deactivate', button_class='danger-color-dark', icon='power-off') }}
+{%- endmacro -%}
+
+
+
+{# ============================================================ #}
+{# SETTINGS HELPERS =========================================== #}
+{# ============================================================ #}
+
+
+{%- macro render_example(example) -%}
+  <div class="card text-white stylish-color-dark mt-2">
+    {# Class ml-3 is to separate text #}
+    <div class="card-header px-2 py-1">
+      <b>Example:</b>
+      <div class="ml-1">{{ example }}</div>
+    </div>
+    <div class="card-body px-2 py-1">
+      <b>Explanation:</b>
+      <div class="ml-1">{{ caller() }}</div>
+    </div>
+  </div>
+{%- endmacro -%}
+
+{%- macro settings_element_basic(field, label=none, icon=none, description=none, show_info_button=true, visible=false, possible_values=none, emojiable=none) -%}
+  <div class="settings-element-basic js-settings-element-input-parent py-3 {{ get_visibility_classes(visible) }}">
+    <div class="form-row">
+      <div class="col-10 col-md-11">
+        {%- set field_append = caller('field_append') -%}
+        {%- set input_help = caller('input_help') -%}
+
+        {%- if field_append -%}
+          <div class="form-row">
+            <div class="col-8 col-sm-9">
+              {{ render_field(field=field, label=label, icon=icon, description=description, possible_values=possible_values, emojiable=emojiable) }}
+            </div>
+            <div class="col-4 col-sm-3">
+              {{ field_append }}
+            </div>
+          </div>
+        {%- else -%}
+          {{ render_field(field=field, label=label, icon=icon, description=description, possible_values=possible_values, emojiable=emojiable) }}
+        {%- endif -%}
+
+        {%- if input_help -%}
+          <div class="form-row">
+            <div class="col-12">
+              {{ input_help }}
+            </div>
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="col-2 col-md-1">
+        {%- if show_info_button -%}
+          <button type="button" class="btn btn-light btn-circle" data-toggle="collapse" data-target="#collapse-{{ field.id }}" aria-expanded="false" aria-controls="collapse-{{ field.id }}">
+            <i class="fas fa-info"></i>
+          </button>
+        {%- endif -%}
+      </div>
+    </div>
+    <div id="collapse-{{ field.id }}" class="collapse card bg-light mt-2">
+      <div class="p-2">
+        {{ caller('description') }}
+      </div>
+    </div>
+  </div>
+{%- endmacro -%}
+
+{%- macro settings_with_input_help(field, label=none, icon=none, description=none, show_info_button=true, visible=false, possible_values=none, defined_input_helps_dict=none) -%}
+  {%- set parent_caller = caller -%}
+  {%- call(part) settings_element_basic(field=field, label=label, icon=icon, description=description, show_info_button=show_info_button, visible=visible, possible_values=possible_values) -%}
+    {%- if part == 'input_help' -%}
+      {%- if defined_input_helps_dict is not none -%}
+        <div class="settings-action-input-wrapper">
+        {%- for text, value in defined_input_helps_dict.items() -%}
+          <button type="button" class="btn btn-light btn-sm m-0 mb-1 js-settings-action-input-help" data-value="{{ value }}">{{ text }}</button>
+        {%- endfor -%}
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      {{ parent_caller(part) }}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro settings_time(field, label=none, icon=none, description=none, show_info_button=true, visible=false, possible_values=none, defined_timings_dict=none) -%}
+  {%- set parent_caller = caller -%}
+  {%- call(part) settings_with_input_help(field=field, label=label, icon=icon, description=description, show_info_button=show_info_button,
+                      visible=visible, possible_values=possible_values, defined_input_helps_dict=defined_timings_dict) -%}
+    {%- if part == 'field_append' -%}
+      <div class="md-form mt-4">
+        <label class="active">Unit</label>
+        <div>seconds</div>
+      </div>
+    {%- else -%}
+      {{ parent_caller(part) }}
+    {%- endif -%}
+  {%- endcall -%}
+{%- endmacro -%}
+
+{%- macro setting_list_with_custom_list_picker(field, custom_list_field, custom_list_type_key, label=none, icon=none, description=none, show_info_button=true, visible=false, possible_values=none, emojiable=none) -%}
+  <div class="js-custom-list-picker" data-list-type-key="{{ custom_list_type_key }}">
+    {%- set parent_caller = caller -%}
+    {%- call(part) settings_element_basic(field=field, label=label, icon=icon, description=description, show_info_button=show_info_button,
+      visible=visible, possible_values=possible_values, emojiable=emojiable) -%}
+      {%- if part == 'input_help' -%}
+        <div class="d-none js-custom-list-field-info">
+          <div class="alert alert-primary m-1 p-1" role="alert">
+            <span class="js-custom-list-field-info-name"></span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary js-custom-list-open-picker"><i class="fas fa-list mr-1"></i> Use custom list</button>
+        <button type="button" class="btn btn-sm btn-danger d-none js-custom-list-remove"><i class="fas fa-times mr-1"></i> Remove</button>
+      {%- else -%}
+        {{ parent_caller(part) }}
+      {%- endif -%}
+    {%- endcall -%}
+    {# This field will be populated automatically #}
+    <div class="js-custom-list-field">
+      {{ render_field(field=custom_list_field)}}
+    </div>
+  </div>
+{%- endmacro -%}
+
