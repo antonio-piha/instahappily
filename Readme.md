@@ -1,6 +1,6 @@
 # InstaHappily
 
-The project is called InstaHappily and it is the combination of GUI, installer for windows and a windows service for a popular Instagram automation bot InstaPy (which is not my project, but it is open source on github).
+The project is called InstaHappily and it is the combination of GUI, installer for windows and a windows service for a popular Instagram automation bot InstaPy: https://github.com/timgrossmann/InstaPy (which is not mine, but open sourced).
 
 Since InstaPy is a bot written in python it was hard for end users (general public) to set it up, install, modify, etc. So InstaHappily was born to overcome those obstacles.
 
