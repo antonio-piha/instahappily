@@ -16,6 +16,22 @@ The GUI, which is actually a web interface running in Chrome and technically a w
 
 Techstack: Python 3.6, Flask, Jinja2, SQLiteDB, SQLAlchemy, Flask-migrate (Alembic SQlite), Bootstrap (MDBootstrap), SCSS, Javascript, jQuery, Gulp, Chart.js
 
+Home:
+![image](gui-images/home.PNG)
+
+Adding profile:
+![image](gui-images/add-profile.PNG)
+
+Creating session:
+![image](gui-images/creating-session-1.PNG)
+
+Full examples for each setting:
+![image](gui-images/full-examples.PNG)
+
+Ability to run session forever:
+![image](gui-images/ability-to-run-session-forever.PNG)
+
+Checkout more images in "gui-images" folder: https://github.com/antonio-piha/instahappily/tree/master/gui-images
 
 # Dev
 mklink /D "node_modules" "D:\PROJEKTI\COMMON\npm\node_modules"
