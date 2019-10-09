@@ -1,4 +1,4 @@
-## PREPARE YOU DEV ENVIRONMENT
+## PREPARE YOUR DEV ENVIRONMENT
 
 Requirements:
 PyInstaller==3.4
