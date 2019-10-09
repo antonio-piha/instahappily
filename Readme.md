@@ -8,7 +8,7 @@ InstaPy is written in Python, so my decision was ofcourse Python, also utilising
 
 This project (InstaHappily) is written by using Flask, which is micro web framework in Python, and all good that comes with it like Jinja2 for templating and SQLAlchemy for managing SQLite DB where all the data is stored. To be able to run the bot I had to implement couple levels of multi-processing in Python with a combination of creating a Windows service to handle the app itself. The app is running in a 
 
-All of that is running on Gunicorn (http web server) and the idea was to run it on clients machines so everything is shipped in an installer which I wrote using InnoSetup. InnoSetup is one of the installer tools that enables you to write installers for Windows in their specific language (or expressions) with a posibility of using Pascal as a language to add additional features to the installer. I'm using Pascal to add some extras. 
+All of that is running on Flask dev http web server and the idea was to run it on clients machines so everything is shipped in an installer which I wrote using InnoSetup. InnoSetup is one of the installer tools that enables you to write installers for Windows in their specific language (or expressions) with a posibility of using Pascal as a language to add additional features to the installer. I'm using Pascal to add some extras. 
 
 Since having Chrome was must have on a client machine, Chrome installer was part of this project installer as well. Also the installer will install Python on a client machine. Idea is to switch to a frozen app later in development meaning Python wouldn't be necessary to install on clients. 
 
