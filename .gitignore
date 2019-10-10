@@ -118,7 +118,8 @@ tests/logs
 *.bin
 proxy_auth*
 *.db-journal
-Installer/Windows/Output
+InstaPy
+
 
 #keep
 !App/frontend-third-parties/
