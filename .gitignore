@@ -118,6 +118,7 @@ tests/logs
 *.bin
 proxy_auth*
 *.db-journal
+InstaPy
 
 #keep
 !App/frontend-third-parties/
