@@ -36,6 +36,7 @@ Checkout more images in "gui-images" folder: https://github.com/antonio-piha/ins
 # Dev
 mklink /D "node_modules" "D:\PROJEKTI\COMMON\npm\node_modules"
 
+InstaPy is not included in the repository and before dev it should be added to the repo to the folder InstaPy (create new folder with that name and put the bot code inside)
 
 # App
 py -3.6 -m pip install -U pip
