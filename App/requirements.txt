@@ -20,7 +20,7 @@ grpcio==1.16.1
 idna==2.7
 instapy-chromedriver==2.44
 itsdangerous==0.24
-Jinja2==2.10
+Jinja2==2.11.3
 jsonschema==2.6.0
 Mako==1.0.8
 MarkupSafe==1.0
