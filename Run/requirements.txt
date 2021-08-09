@@ -4,5 +4,5 @@ macholib==1.11
 pefile==2018.8.8
 PyInstaller==3.4
 pypiwin32==223
-pywin32==224
+pywin32==301
 pywin32-ctypes==0.2.0
