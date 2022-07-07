@@ -10,7 +10,7 @@
   "chart.js": "^2.7.3",
   "jquery": "^3.3.1",
   "mdbootstrap": "^4.5.10",
-  "moment": "^2.23.0",
+  "moment": "^2.29.4",
   "popper.js": "^1.14.4",
   "@fortawesome/fontawesome-free": "^5.8.1",
   "autoprefixer": "^9.1.5",
