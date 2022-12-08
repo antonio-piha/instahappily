@@ -1,7 +1,7 @@
 alembic==1.0.8
 APScheduler==3.6.1
 autopep8==1.4
-certifi==2018.10.15
+certifi==2022.12.7
 chardet==3.0.4
 clarifai==2.4.1
 click==6.7
